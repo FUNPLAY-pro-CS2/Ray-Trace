@@ -7,7 +7,7 @@
 #include "globaltypes.h"
 
 namespace
-TemplatePlugin
+RayTracePlugin
 {
     class CBaseModelEntity : public CBaseEntity
     {

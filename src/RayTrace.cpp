@@ -11,7 +11,7 @@
 #include "colors.h"
 #include "log.h"
 
-namespace TemplatePlugin::RayTrace
+namespace RayTracePlugin::RayTrace
 {
     using TraceShapeFn = bool(*)(void* pThis,
                                  Ray_t& ray,

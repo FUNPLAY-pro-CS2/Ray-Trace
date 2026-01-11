@@ -7,7 +7,7 @@
 #include <Shared.h>
 
 namespace
-TemplatePlugin
+RayTracePlugin
 {
     std::list<std::shared_ptr<CTimerBase>> g_timers;
 

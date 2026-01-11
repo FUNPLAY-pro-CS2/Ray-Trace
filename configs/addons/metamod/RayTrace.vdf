@@ -1,0 +1,5 @@
+"Metamod Plugin"
+{
+	"alias"	"RayTrace"
+	"file"	"addons/RayTrace/bin/linuxsteamrt64/RayTrace"
+}

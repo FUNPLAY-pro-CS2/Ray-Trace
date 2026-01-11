@@ -16,7 +16,7 @@
 #define TIMERFLAG_MAP		(1 << 0) // Only valid for this map, cancels on map change
 #define TIMERFLAG_ROUND		(1 << 1) // Only valid for this round, cancels on new round
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     class CTimerBase
     {
     protected:

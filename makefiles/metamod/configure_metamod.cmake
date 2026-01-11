@@ -5,6 +5,6 @@ else()
 endif()
 
 configure_file(
-		${CMAKE_CURRENT_LIST_DIR}/TemplatePlugin.vdf.in
-	${PROJECT_SOURCE_DIR}/configs/addons/metamod/TemplatePlugin.vdf
+		${CMAKE_CURRENT_LIST_DIR}/RayTrace.vdf.in
+	${PROJECT_SOURCE_DIR}/configs/addons/metamod/RayTrace.vdf
 )

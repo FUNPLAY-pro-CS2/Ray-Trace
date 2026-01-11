@@ -24,13 +24,15 @@
 #include <platform.h>
 #include <unordered_map>
 
+#include "schemasystem.h"
+
 #define AMMO_OFFSET_HEGRENADE 13
 #define AMMO_OFFSET_FLASHBANG 14
 #define AMMO_OFFSET_SMOKEGRENADE 15
 #define AMMO_OFFSET_MOLOTOV 16
 #define AMMO_OFFSET_DECOY 17
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     class CCSPlayerController;
     class CCSPlayerPawn;
     extern bool g_bAwsChangingTeam;
@@ -214,16 +216,6 @@ namespace TemplatePlugin {
         SCHEMA_FIELD(bool, m_bIsPickingUpItemWithUse)
 
         SCHEMA_FIELD(bool, m_bPickedUpWeapon)
-
-        void DropWeapon(CBasePlayerWeapon *pWeapon, Vector *pVecTarget = nullptr, Vector *pVelocity = nullptr) {
-            static int offset = shared::g_pGameConfig->GetOffset("CCSPlayer_WeaponServices_DropWeapon");
-            CALL_VIRTUAL(void, offset, this, pWeapon, pVecTarget, pVelocity);
-        }
-
-        void SelectItem(CBasePlayerWeapon *pWeapon, int unk1 = 0) {
-            static int offset = shared::g_pGameConfig->GetOffset("CCSPlayer_WeaponServices_SelectItem");
-            CALL_VIRTUAL(void, offset, this, pWeapon, unk1);
-        }
     };
 
     class CCSPlayerController_ActionTrackingServices : public CPlayerControllerComponent {

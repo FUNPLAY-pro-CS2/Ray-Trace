@@ -5,13 +5,14 @@
 #include <ISmmPlugin.h>
 #include "entitysystem.h"
 
-namespace TemplatePlugin
+namespace RayTracePlugin
 {
-    class ITemplatePlugin : public ISmmPlugin, public IMetamodListener
+    class IPlugin : public ISmmPlugin, public IMetamodListener
     {
     public:
         bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late) override;
         bool Unload(char *error, size_t maxlen) override;
+        void *OnMetamodQuery(const char *iface, int *ret) override;
         const char *GetAuthor() override;
         const char *GetName() override;
         const char *GetDescription() override;
@@ -22,7 +23,7 @@ namespace TemplatePlugin
         const char *GetLogTag() override;
     };
 
-    extern ITemplatePlugin g_iPlugin;
+    extern IPlugin g_iPlugin;
 }
 
 #endif //_INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_

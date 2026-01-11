@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector.h>
 
-namespace TemplatePlugin::VectorExtends
+namespace RayTracePlugin::VectorExtends
 {
     inline const Vector VectorZero{0.0f, 0.0f, 0.0f};
     inline const QAngle RotationZero{0.0f, 0.0f, 0.0f};

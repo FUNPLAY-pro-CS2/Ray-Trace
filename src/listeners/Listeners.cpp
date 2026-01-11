@@ -3,20 +3,16 @@
 // Copyright (c) 2025 slynxcz. All rights reserved.
 //
 #include "Listeners.h"
-#include <detours.h>
 #include <RayTrace.h>
 #include <Shared.h>
 #include <tasks.h>
-#include <commands/Commands.h>
 #include <dynlibutils/module.h>
-#include <events/Events.h>
-#include <schema/CGameRules.h>
 
 class GameSessionConfiguration_t
 {
 };
 
-namespace TemplatePlugin::Listeners {
+namespace RayTracePlugin::Listeners {
     SourceHooks sourceHooks;
 
     SH_DECL_HOOK3_void(IServerGameDLL, GameFrame, SH_NOATTRIB, 0, bool, bool, bool);
@@ -50,12 +46,6 @@ namespace TemplatePlugin::Listeners {
         Tasks::Tick(simulating);
         if (!shared::getGlobalVars())
             return;
-
-        shared::g_bHasTicked = true;
-
-        if (CCSGameRules::FindGameRules())
-            CCSGameRules::FindGameRules()->m_bGameRestart =
-                    CCSGameRules::FindGameRules()->m_flRestartRoundTime < shared::GetCurrentTime();
     }
 
     void SourceHooks::Hook_StartupServer(const GameSessionConfiguration_t& config,
@@ -64,18 +54,9 @@ namespace TemplatePlugin::Listeners {
         if (!shared::g_bDetoursLoaded)
         {
             shared::g_pEntitySystem = GameEntitySystem();
-            shared::g_pEntitySystem->AddListenerEntity(&Detours::entityListener);
-            Commands::InitCommands();
-            Events::InitEvents();
-            Detours::InitHooks();
             RayTrace::Initialize();
             shared::g_bDetoursLoaded = true;
         }
-        if (shared::g_bHasTicked)
-        {
-            Tasks::RemoveMapChangeTimers();
-        }
-        shared::g_bHasTicked = false;
     }
 
     int SourceHooks::Hook_LoadEventsFromFile(const char* filename, bool bSearchAll)

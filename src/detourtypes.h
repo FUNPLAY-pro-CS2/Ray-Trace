@@ -9,7 +9,7 @@
 #include <convar.h>
 #include <string>
 
-namespace TemplatePlugin
+namespace RayTracePlugin
 {
     class CBaseEntity;
     class CTakeDamageInfo;

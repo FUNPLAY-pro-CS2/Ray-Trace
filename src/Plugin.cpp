@@ -1,51 +1,44 @@
-#include "TemplatePlugin.h"
+#include "Plugin.h"
 #include "path.h"
 #include "Shared.h"
 #include "dynlibutils/module.h"
 #include <entitysystem.h>
 #include "igameevents.h"
 #include <iserver.h>
-#include "game_system.h"
 #include "schemasystem/schemasystem.h"
-#include "schema/CCSPlayerController.h"
 #include "schema/cgameresourceserviceserver.h"
 #include "schema/plat.h"
 #include <filesystem>
 #include <cstdio>
-#include <detours.h>
 #include <fstream>
 #include <gameconfig.h>
 #include <regex>
 #include <listeners/Listeners.h>
-#include "EntityData.h"
+#include "CRayTraceInterface.h"
 #include "log.h"
-#include "PlayersData.h"
+#include "RayTrace.h"
 #include "tasks.h"
-#include "commands/Commands.h"
-#include "events/Events.h"
-#include "hooks/Hooks.h"
-#include "schema/CGameRules.h"
 
 #define VERSION_STRING SEMVER " @ " GITHUB_SHA
 #define BUILD_TIMESTAMP __DATE__ " " __TIME__
 
-PLUGIN_EXPOSE(Template, TemplatePlugin::g_iPlugin);
+PLUGIN_EXPOSE(RayTrace, RayTracePlugin::g_iPlugin);
 
 CGameEntitySystem* GameEntitySystem()
 {
     return *reinterpret_cast<CGameEntitySystem**>((uintptr_t)(g_pGameResourceServiceServer) +
-        TemplatePlugin::shared::g_pGameConfig->GetOffset("GameEntitySystem"));
+        RayTracePlugin::shared::g_pGameConfig->GetOffset("GameEntitySystem"));
 }
 
 class GameSessionConfiguration_t
 {
 };
 
-namespace TemplatePlugin
+namespace RayTracePlugin
 {
-    ITemplatePlugin g_iPlugin;
+    IPlugin g_iPlugin;
 
-    bool ITemplatePlugin::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late)
+    bool IPlugin::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late)
     {
         PLUGIN_SAVEVARS();
 
@@ -84,9 +77,6 @@ namespace TemplatePlugin
             return false;
         }
 
-        if (!InitGameSystems())
-            return false;
-
         g_SMAPI->AddListener(this, this);
         Listeners::InitListeners();
 
@@ -96,11 +86,6 @@ namespace TemplatePlugin
         if (late)
         {
             shared::g_pEntitySystem = GameEntitySystem();
-            shared::g_pEntitySystem->AddListenerEntity(&Detours::entityListener);
-            Commands::InitCommands();
-            Events::InitEvents();
-            Hooks::InitHooks();
-            Detours::InitHooks();
             RayTrace::Initialize();
             shared::g_bDetoursLoaded = true;
         }
@@ -109,12 +94,9 @@ namespace TemplatePlugin
         return true;
     }
 
-    bool ITemplatePlugin::Unload(char* error, size_t maxlen)
+    bool IPlugin::Unload(char* error, size_t maxlen)
     {
         Listeners::DestructListeners();
-        Detours::ShutdownHooks();
-        Detours::Shutdown();
-        shared::g_pEntitySystem->RemoveListenerEntity(&Detours::entityListener);
         Tasks::Shutdown();
 
         FP_INFO("<<< Unload() success! >>>");
@@ -122,12 +104,23 @@ namespace TemplatePlugin
         return true;
     }
 
-    const char* ITemplatePlugin::GetAuthor() { return "Slynx"; }
-    const char* ITemplatePlugin::GetName() { return "TemplatePlugin"; }
-    const char* ITemplatePlugin::GetDescription() { return "TemplatePlugin Metamod plugin for CS2 servers."; }
-    const char* ITemplatePlugin::GetURL() { return "https://slynxdev.cz"; }
-    const char* ITemplatePlugin::GetLicense() { return "GPLv3"; }
-    const char* ITemplatePlugin::GetVersion() { return VERSION_STRING; }
-    const char* ITemplatePlugin::GetDate() { return BUILD_TIMESTAMP; }
-    const char* ITemplatePlugin::GetLogTag() { return "TemplatePlugin"; }
+    void *IPlugin::OnMetamodQuery(const char *iface, int *ret) {
+        if (strcmp(iface, RAYTRACE_INTERFACE_VERSION) == 0) {
+            *ret = META_IFACE_OK;
+            FP_INFO("CRayTraceInterface001 accessed.");
+            return &RayTrace::g_CRayTrace;
+        }
+
+        *ret = META_IFACE_FAILED;
+        return nullptr;
+    }
+
+    const char* IPlugin::GetAuthor() { return "Slynx"; }
+    const char* IPlugin::GetName() { return "RayTrace"; }
+    const char* IPlugin::GetDescription() { return "RayTrace Metamod plugin for CS2 servers."; }
+    const char* IPlugin::GetURL() { return "https://slynxdev.cz"; }
+    const char* IPlugin::GetLicense() { return "GPLv3"; }
+    const char* IPlugin::GetVersion() { return VERSION_STRING; }
+    const char* IPlugin::GetDate() { return BUILD_TIMESTAMP; }
+    const char* IPlugin::GetLogTag() { return "RayTrace"; }
 }

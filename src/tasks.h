@@ -6,7 +6,7 @@
 
 #include <functional>
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     using TimerCallback = std::function<void()>;
 
     enum TimerFlags {

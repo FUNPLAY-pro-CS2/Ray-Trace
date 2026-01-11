@@ -4,9 +4,9 @@
 //
 #include "gameconfig.h"
 #include <fstream>
-#include <TemplatePlugin.h>
+#include <Plugin.h>
 
-namespace TemplatePlugin
+namespace RayTracePlugin
 {
     CGameConfig::CGameConfig(const std::string& path) { m_sPath = path; }
 

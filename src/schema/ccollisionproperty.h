@@ -6,7 +6,7 @@
 
 #include "CBaseEntity.h"
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     struct VPhysicsCollisionAttribute_t
     {
         DECLARE_SCHEMA_CLASS_INLINE(VPhysicsCollisionAttribute_t)

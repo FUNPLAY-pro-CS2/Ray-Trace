@@ -8,7 +8,7 @@
 #include <string>
 #include "Shared.h"
 
-namespace TemplatePlugin::Paths {
+namespace RayTracePlugin::Paths {
     static std::string gameDirectory;
 
     inline std::string GameDirectory() {
@@ -20,10 +20,10 @@ namespace TemplatePlugin::Paths {
         return gameDirectory;
     }
 
-    inline std::string GetRootDirectory() { return GameDirectory() + "/addons/TemplatePlugin"; }
+    inline std::string GetRootDirectory() { return GameDirectory() + "/addons/RayTracePlugin"; }
     inline std::string EnginePath() { return GameDirectory() + "../bin/linuxsteamrt64/libengine2.so"; }
     inline std::string Tier0Path() { return GameDirectory() + "../bin/linuxsteamrt64/libtier0.so"; }
     inline std::string ServerPath() { return GameDirectory() + "/bin/linuxsteamrt64/libserver.so"; }
     inline std::string SchemaSystemPath() { return GameDirectory() + "../bin/linuxsteamrt64/libschemasystem.so"; }
     inline std::string VScriptPath() { return GameDirectory() + "../bin/linuxsteamrt64/libvscript.so"; }
-} // namespace TemplatePlugin::Paths
+} // namespace RayTracePlugin::Paths

@@ -11,7 +11,7 @@
 // 	CBitVec<16384> *m_pTransmitEdict;
 // };
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     enum CSRoundEndReason {
         TargetBombed = 1, /**< Target Successfully Bombed! */
         VIPEscaped, /**< The VIP has escaped! - Doesn't exist on CS:GO */

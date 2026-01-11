@@ -10,7 +10,7 @@
 #undef snprintf
 #include <nlohmann/json.hpp>
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     class CGameConfig
     {
     public:

@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-namespace TemplatePlugin {
+namespace RayTracePlugin {
     std::shared_ptr<spdlog::logger> Log::m_FP_logger;
 
     void Log::Init() {
@@ -28,13 +28,13 @@ namespace TemplatePlugin {
         auto color_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
         color_sink->set_pattern("%^[%T.%e] %n: %v%$");
 
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("TemplatePlugin.log", true);
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("RayTrace.log", true);
         file_sink->set_pattern("[%T.%e] [%^%l%$] %n: %v");
 
         sinks.emplace_back(color_sink);
         sinks.emplace_back(file_sink);
 
-        m_FP_logger = std::make_shared<spdlog::logger>("TemplatePlugin", sinks.begin(), sinks.end());
+        m_FP_logger = std::make_shared<spdlog::logger>("RayTrace", sinks.begin(), sinks.end());
         register_logger(m_FP_logger);
         m_FP_logger->set_level(spdlog::level::trace);
         m_FP_logger->flush_on(spdlog::level::info);
@@ -43,7 +43,7 @@ namespace TemplatePlugin {
     }
 
     void Log::Close() {
-        spdlog::drop("TemplatePlugin");
+        spdlog::drop("RayTrace");
         m_FP_logger.reset();
     }
 }

@@ -9,7 +9,7 @@
 #include <sourcehook/sourcehook.h>
 #include <sourcehook/sourcehook_impl.h>
 
-namespace TemplatePlugin::shared
+namespace RayTracePlugin::shared
 {
     ICvar* g_pCVar = nullptr;
     IServerGameDLL* g_pServer = nullptr;

@@ -23,7 +23,7 @@
 #include <netmessages.pb.h>
 
 namespace
-TemplatePlugin
+RayTracePlugin
 {
     class CHLTVServer;
     class INetMessage;
