@@ -1,0 +1,5 @@
+"Metamod Plugin"
+{
+	"alias"	"NadeKingChallenges"
+	"file"	"addons/NadeKingChallenges/bin/linuxsteamrt64/NadeKingChallenges"
+}

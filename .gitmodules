@@ -1,0 +1,6 @@
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "vendor/funchook"]
+	path = vendor/funchook
+	url = https://github.com/kubo/funchook

@@ -1,0 +1,8 @@
+services:
+  builder:
+    image: cmake-builder
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ..:/app/source
