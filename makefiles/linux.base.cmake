@@ -33,6 +33,5 @@ set(LINK_LIBRARIES
     ${SOURCESDK_LIB}/linux64/mathlib.a
     spdlog
     Protobufs
-    distorm
-    funchook-static
+    khook_lib
 )

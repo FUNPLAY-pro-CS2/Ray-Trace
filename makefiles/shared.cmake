@@ -60,7 +60,7 @@ include_directories(
     ${SOURCESDK}/public/schemasystem
     ${METAMOD_DIR}/core
     ${METAMOD_DIR}/core/sourcehook
-    vendor/funchook/include
+    vendor/khook/include
     vendor/spdlog/include
     vendor/nlohmann
     vendor

@@ -15,6 +15,5 @@ set(LINK_LIBRARIES
     ${SOURCESDK_LIB}/public/win64/mathlib.lib
     spdlog
     Protobufs
-    distorm
-    funchook-static
+    khook_lib
 )

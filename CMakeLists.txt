@@ -2,7 +2,6 @@
 project(RayTrace C CXX ASM)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set(FUNCHOOK_BUILD_TESTS OFF CACHE BOOL "Disable building tests for funchook." FORCE)
 set(FMT_WERROR OFF CACHE BOOL "" FORCE)
 
 if(DEFINED ENV{HL2SDKCS2})
@@ -27,7 +26,7 @@ include(makefiles/shared.cmake)
 include(makefiles/protobuf.cmake)
 
 add_subdirectory(vendor/spdlog)
-add_subdirectory(vendor/funchook)
+add_subdirectory(vendor/khook)
 
 file(GLOB_RECURSE SOURCE_FILES
     src/*.cpp
@@ -52,10 +51,6 @@ list(APPEND SOURCE_FILES
     vendor/dynlibutils/module.h
 )
 
-foreach(f ${SOURCE_FILES})
-    message(STATUS "Zdrojový soubor: ${f}")
-endforeach()
-
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC PROJECT_NAMESPACE=${PROJECT_NAME}
@@ -64,7 +59,6 @@ target_compile_definitions(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cs2_sdk
 )
 
 find_package(Git QUIET)
@@ -78,31 +72,6 @@ if (GIT_FOUND)
     )
 else()
     set(GIT_SHA "nogit")
-endif()
-
-string(TIMESTAMP BUILD_TIME_UTC "%Y%m%d%H%M%S" UTC)
-set(_seed_input "${GIT_SHA}-${BUILD_TIME_UTC}")
-string(SHA1 _sha1 "${_seed_input}")
-string(SUBSTRING ${_sha1} 0 16 _seed16)
-set(BUILD_SEED_HEX "0x${_seed16}")
-message(STATUS "Obfuscation BUILD_SEED: ${BUILD_SEED_HEX} (from ${_seed_input})")
-add_compile_definitions(BUILD_SEED=${BUILD_SEED_HEX})
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -fvisibility=hidden -fdata-sections -ffunction-sections)
-    target_link_options(${PROJECT_NAME} PRIVATE -Wl,--gc-sections)
-endif()
-
-set_target_properties(${PROJECT_NAME} PROPERTIES INTERPROCEDURAL_OPTIMIZATION OFF)
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    find_program(STRIP_EXECUTABLE strip)
-    if (STRIP_EXECUTABLE)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${STRIP_EXECUTABLE} --strip-unneeded $<TARGET_FILE:${PROJECT_NAME}>
-            COMMENT "Stripping symbols from $<TARGET_FILE:${PROJECT_NAME}>"
-        )
-    endif()
 endif()
 
 if (LINUX)
