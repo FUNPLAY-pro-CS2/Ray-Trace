@@ -47,8 +47,7 @@ enum class InteractionLayers : uint64_t
     csgo_moveable = 0x800000000,
     csgo_opaque = 0x1000000000,
     csgo_monster = 0x2000000000,
-    csgo_thrown_grenade = 0x8000000000,
-    FUNPLAY_IGNORE_PLAYER = (0x8000000000ull << 1)
+    csgo_thrown_grenade = 0x8000000000
 };
 
 constexpr InteractionLayers operator|(InteractionLayers a, InteractionLayers b)
