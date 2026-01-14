@@ -80,7 +80,7 @@ jobs:
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release ^
               -DHL2SDKCS2=%HL2SDKCS2% -DMMSOURCE_DEV=%MMSOURCE_DEV% -DCSGO_PROTO=%CSGO_PROTO%
-          cmake --build build --config Release --target RayTracePlugin
+          cmake --build build --config Release --target RayTrace
 
       - name: Strip symbols (Windows)
         run: |
