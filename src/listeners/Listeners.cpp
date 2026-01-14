@@ -44,8 +44,6 @@ namespace RayTracePlugin::Listeners {
     void SourceHooks::Hook_GameFrame(bool simulating, bool bFirstTick, bool bLastTick)
     {
         Tasks::Tick(simulating);
-        if (!shared::getGlobalVars())
-            return;
     }
 
     void SourceHooks::Hook_StartupServer(const GameSessionConfiguration_t& config,

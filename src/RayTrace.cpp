@@ -13,6 +13,8 @@
 
 namespace RayTracePlugin::RayTrace
 {
+    CRayTrace g_CRayTrace;
+
     using TraceShapeFn = bool(*)(void* pThis,
                                  Ray_t& ray,
                                  Vector& start,

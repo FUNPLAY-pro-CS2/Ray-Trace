@@ -17,12 +17,12 @@ namespace RayTracePlugin::RayTrace
             : CTraceFilter(static_cast<CEntityInstance*>(entityToIgnore),
                            entityToIgnore ? entityToIgnore->m_hOwnerEntity.Get() : nullptr,
                            entityToIgnore ? entityToIgnore->m_pCollision()->m_collisionAttribute().m_nHierarchyId() : static_cast<uint16>(0xFFFFFFFF),
-                           0x2c3011,
+                           static_cast<uint64_t>(MASK_SHOT_PHYSICS),
                            COLLISION_GROUP_DEFAULT, true)
         {
         }
 
-        CTraceFilterEx() : CTraceFilter(0x2c3011, COLLISION_GROUP_DEFAULT, true)
+        CTraceFilterEx() : CTraceFilter(static_cast<uint64_t>(MASK_SHOT_PHYSICS), COLLISION_GROUP_DEFAULT, true)
         {
         }
     };
@@ -78,5 +78,5 @@ namespace RayTracePlugin::RayTrace
         }
     };
 
-    inline CRayTrace g_CRayTrace;
+    extern CRayTrace g_CRayTrace;
 }

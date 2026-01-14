@@ -107,7 +107,7 @@ namespace RayTracePlugin
     void *IPlugin::OnMetamodQuery(const char *iface, int *ret) {
         if (strcmp(iface, RAYTRACE_INTERFACE_VERSION) == 0) {
             *ret = META_IFACE_OK;
-            FP_INFO("CRayTraceInterface001 accessed.");
+            FP_INFO("{} accessed.", RAYTRACE_INTERFACE_VERSION);
             return &RayTrace::g_CRayTrace;
         }
 

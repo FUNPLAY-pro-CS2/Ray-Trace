@@ -1,10 +1,7 @@
 #pragma once
-#include "vector.h"
-#include "entityinstance.h"
-#include "gametrace.h"
-#include "trace.h"
-#include "cmodel.h"
 #include <optional>
+#include "vector.h"
+#include "gametrace.h"
 
 #define RAYTRACE_INTERFACE_VERSION "CRayTraceInterface001"
 
@@ -54,24 +51,117 @@ enum class InteractionLayers : uint64_t
     FUNPLAY_IGNORE_PLAYER = (0x8000000000ull << 1)
 };
 
-inline InteractionLayers operator|(InteractionLayers a, InteractionLayers b)
+constexpr InteractionLayers operator|(InteractionLayers a, InteractionLayers b)
 {
     return static_cast<InteractionLayers>(
         static_cast<uint64_t>(a) | static_cast<uint64_t>(b)
     );
 }
 
-inline InteractionLayers& operator|=(InteractionLayers& a, InteractionLayers b)
+constexpr InteractionLayers operator&(InteractionLayers a, InteractionLayers b)
+{
+    return static_cast<InteractionLayers>(
+        static_cast<uint64_t>(a) & static_cast<uint64_t>(b)
+    );
+}
+
+constexpr InteractionLayers operator~(InteractionLayers a)
+{
+    return static_cast<InteractionLayers>(
+        ~static_cast<uint64_t>(a)
+    );
+}
+
+constexpr InteractionLayers& operator|=(InteractionLayers& a, InteractionLayers b)
 {
     a = a | b;
     return a;
 }
 
+/// Custom base (0x2C3011, using this as default in my plugins)
+constexpr InteractionLayers MASK_SHOT_PHYSICS =
+    InteractionLayers::Solid |
+    InteractionLayers::PlayerClip |
+    InteractionLayers::Window |
+    InteractionLayers::PassBullets |
+    InteractionLayers::Player |
+    InteractionLayers::NPC |
+    InteractionLayers::Physics_Prop;
+
+/// Only hitboxes (headshots etc.)
+constexpr InteractionLayers MASK_SHOT_HITBOX =
+    InteractionLayers::Hitboxes |
+    InteractionLayers::Player |
+    InteractionLayers::NPC;
+
+/// Physics + hitboxes (full bullet trace)
+constexpr InteractionLayers MASK_SHOT_FULL =
+    MASK_SHOT_PHYSICS |
+    InteractionLayers::Hitboxes;
+
+/// World only (no entities)
+constexpr InteractionLayers MASK_WORLD_ONLY =
+    InteractionLayers::Solid |
+    InteractionLayers::Window |
+    InteractionLayers::PassBullets;
+
+/// Grenade trace
+constexpr InteractionLayers MASK_GRENADE =
+    InteractionLayers::Solid |
+    InteractionLayers::Window |
+    InteractionLayers::Physics_Prop |
+    InteractionLayers::PassBullets;
+
+/// Brush only
+constexpr InteractionLayers MASK_BRUSH_ONLY =
+    InteractionLayers::Solid |
+    InteractionLayers::Window;
+
+/// Movement (player)
+constexpr InteractionLayers MASK_PLAYER_MOVE =
+    InteractionLayers::Solid |
+    InteractionLayers::Window |
+    InteractionLayers::PlayerClip |
+    InteractionLayers::PassBullets;
+
+/// Movement (NPC)
+constexpr InteractionLayers MASK_NPC_MOVE =
+    InteractionLayers::Solid |
+    InteractionLayers::Window |
+    InteractionLayers::NPCClip |
+    InteractionLayers::PassBullets;
+
+static_assert(
+    static_cast<uint64_t>(MASK_SHOT_PHYSICS) == 0x2c3011,
+    "MASK_SHOT_PHYSICS mismatch!"
+);
+
+constexpr InteractionLayers RemovePlayers(InteractionLayers m)
+{
+    return static_cast<InteractionLayers>(
+        static_cast<uint64_t>(m) &
+        ~static_cast<uint64_t>(InteractionLayers::Player)
+    );
+}
+
+constexpr InteractionLayers BuildShotMask(bool includePlayers, bool includeHitboxes)
+{
+    InteractionLayers m = MASK_SHOT_PHYSICS;
+
+    if (!includePlayers)
+        m = RemovePlayers(m);
+
+    if (includeHitboxes)
+        m |= InteractionLayers::Hitboxes;
+
+    return m;
+}
+
 struct TraceOptions
 {
-    std::optional<InteractionLayers> InteractsWith{static_cast<InteractionLayers>(0x2c3011)};
+    std::optional<InteractionLayers> InteractsWith{ MASK_SHOT_PHYSICS };
     std::optional<InteractionLayers> InteractsExclude{};
-    bool DrawBeam{false};
+    bool DrawBeam{ false };
 };
 
 struct TraceResult
@@ -83,7 +173,8 @@ struct TraceResult
     Vector Normal{};
 };
 
-class CRayTraceInterface {
+class CRayTraceInterface
+{
 public:
     virtual ~CRayTraceInterface() = default;
 
