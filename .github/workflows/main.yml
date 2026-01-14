@@ -29,7 +29,7 @@ jobs:
     - name: Upload Linux artifact
       uses: actions/upload-artifact@v4
       with:
-        name: RayTracePlugin-linux
+        name: RayTrace-linux
         path: build/addons
 
   build-windows:
@@ -80,21 +80,21 @@ jobs:
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release ^
               -DHL2SDKCS2=%HL2SDKCS2% -DMMSOURCE_DEV=%MMSOURCE_DEV% -DCSGO_PROTO=%CSGO_PROTO%
-          cmake --build build --config Release --target RayTracePlugin
+          cmake --build build --config Release --target RayTrace
 
       - name: Strip symbols (Windows)
         run: |
-          llvm-strip build/Release/RayTracePlugin.dll
+          llvm-strip build/Release/RayTrace.dll
 
       - name: Copy addons structure
         run: |
-          mkdir -p build/addons/RayTracePlugin/bin/win64
-          copy build/Release/RayTracePlugin.dll build/addons/RayTracePlugin/bin/win64/
+          mkdir -p build/addons/RayTrace/bin/win64
+          copy build/Release/RayTrace.dll build/addons/RayTrace/bin/win64/
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RayTracePlugin-wwindows
+          name: RayTrace-wwindows
           path: build/addons
 
   release:
@@ -108,26 +108,26 @@ jobs:
     - name: Download Linux artifact
       uses: actions/download-artifact@v4
       with:
-        name: RayTracePlugin-linux
+        name: RayTrace-linux
         path: ./build/linux
 
     - name: Download Windows artifact
       uses: actions/download-artifact@v4
       with:
-        name: RayTracePlugin-windows
+        name: RayTrace-windows
         path: ./build/windows
 
     - name: Archive packages
       run: |
         version="${GITHUB_REF#refs/tags/}"
-        tar -czf RayTracePlugin-${version}-linux.tar.gz -C build/linux .
-        tar -czf RayTracePlugin-${version}-windows.tar.gz -C build/windows .
+        tar -czf RayTrace-${version}-linux.tar.gz -C build/linux .
+        tar -czf RayTrace-${version}-windows.tar.gz -C build/windows .
 
     - name: Upload release archive
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: RayTracePlugin-*.tar.gz
+        file: RayTrace-*.tar.gz
         tag: ${{ github.ref }}
         file_glob: true
         release_name: "${{ github.ref_name }} - Download"
