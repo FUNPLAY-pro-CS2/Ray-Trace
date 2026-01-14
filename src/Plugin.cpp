@@ -103,6 +103,8 @@ namespace RayTracePlugin
 
         FP_INFO("<<< Unload() success! >>>");
 
+        Log::Close();
+
         return true;
     }
 
