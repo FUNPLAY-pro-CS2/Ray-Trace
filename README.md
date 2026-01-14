@@ -197,20 +197,43 @@ auto result = g_RayTrace->TraceShapeEx(
 
 ``` csharp
 private Func<nint, nint, nint, nint, nint, nint>? _traceShape;
+private Func<nint, nint, nint, nint, nint, nint>? _traceEndShape;
+private Func<nint, nint, nint, nint, nint, nint>? _traceShapeEx;
 
 private void Bind()
 {
+    // index 1 - TraceShape
     _traceShape = VirtualFunction.Create<
-        nint, // thisptr
+        nint, // this
         nint, // Vector*
         nint, // QAngle*
         nint, // ignore entity
         nint, // TraceOptions*
-        nint  // return
-    >(_handle, 0);
+        nint
+    >(_handle, 1);
+
+    // index 2 - TraceEndShape
+    _traceEndShape = VirtualFunction.Create<
+        nint, // this
+        nint, // start Vector*
+        nint, // end Vector*
+        nint, // ignore entity
+        nint, // TraceOptions*
+        nint
+    >(_handle, 2);
+
+    // index 3 - TraceShapeEx
+    _traceShapeEx = VirtualFunction.Create<
+        nint, // this
+        nint, // start Vector*
+        nint, // end Vector*
+        nint, // CTraceFilter*
+        nint, // Ray_t*
+        nint
+    >(_handle, 3);
 }
 
-public bool TraceShape(
+public nint TraceShape(
     nint origin,
     nint angles,
     nint ignoreEntity,
@@ -221,9 +244,38 @@ public bool TraceShape(
         origin,
         angles,
         ignoreEntity,
-        options,
-        nint.Zero
-    ) != nint.Zero;
+        options
+    );
+}
+
+public nint TraceEndShape(
+    nint start,
+    nint end,
+    nint ignoreEntity,
+    nint options)
+{
+    return _traceEndShape!(
+        _handle,
+        start,
+        end,
+        ignoreEntity,
+        options
+    );
+}
+
+public nint TraceShapeEx(
+    nint start,
+    nint end,
+    nint filter,
+    nint ray)
+{
+    return _traceShapeEx!(
+        _handle,
+        start,
+        end,
+        filter,
+        ray
+    );
 }
 ```
 
