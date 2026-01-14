@@ -38,25 +38,6 @@ namespace RayTracePlugin::shared
         if (!g_pGlobalVars) g_pGlobalVars = server->GetGlobals();
         return g_pNetworkServerService->GetIGameServer()->GetGlobals();
     }
-    constexpr float engine_fixed_tick_interval = 0.015625f;
-    const char* GetMapName()
-    {
-        if (getGlobalVars() == nullptr) return nullptr;
 
-        return getGlobalVars()->mapname.ToCStr();
-    }
-    void ServerCommand(const char* command)
-    {
-        auto clean_command = std::string(command);
-        clean_command.append("\n\0");
-        g_pEngine->ServerCommand(clean_command.c_str());
-    }
-    double GetEngineTime() { return Plat_FloatTime(); }
-    float GetTickInterval() { return engine_fixed_tick_interval; }
-    float GetCurrentTime() { return getGlobalVars()->curtime; }
-    int GetTickCount() { return getGlobalVars()->tickcount; }
-    float GetGameFrameTime() { return getGlobalVars()->frametime; }
-
-    bool g_bHasTicked = false;
     bool g_bDetoursLoaded = false;
 }

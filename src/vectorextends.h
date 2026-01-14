@@ -8,6 +8,11 @@
 #include <algorithm>
 #include <vector.h>
 
+#ifdef _WIN32
+#undef min
+#undef max
+#endif
+
 namespace RayTracePlugin::VectorExtends
 {
     inline const Vector VectorZero{0.0f, 0.0f, 0.0f};

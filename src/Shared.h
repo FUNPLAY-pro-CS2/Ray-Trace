@@ -37,13 +37,6 @@ namespace RayTracePlugin::shared
     extern int source_hook_pluginid;
 
     CGlobalVars* getGlobalVars();
-    extern const char *GetMapName();
-    extern void ServerCommand(const char *command);
-    extern double GetEngineTime();
-    extern float GetTickInterval();
-    extern float GetCurrentTime();
-    extern int GetTickCount();
-    extern float GetGameFrameTime();
 
     extern bool g_bDetoursLoaded;
 }
