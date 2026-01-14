@@ -20,7 +20,7 @@ namespace RayTracePlugin::Paths {
         return gameDirectory;
     }
 
-    inline std::string GetRootDirectory() { return GameDirectory() + "/addons/RayTracePlugin"; }
+    inline std::string GetRootDirectory() { return GameDirectory() + "/addons/RayTrace"; }
     inline std::string EnginePath() { return GameDirectory() + "../bin/linuxsteamrt64/libengine2.so"; }
     inline std::string Tier0Path() { return GameDirectory() + "../bin/linuxsteamrt64/libtier0.so"; }
     inline std::string ServerPath() { return GameDirectory() + "/bin/linuxsteamrt64/libserver.so"; }

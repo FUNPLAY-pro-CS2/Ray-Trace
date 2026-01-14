@@ -2,14 +2,9 @@ FROM registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
 
 WORKDIR /app
 
-RUN echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-21 main" >> /etc/apt/sources.list.d/llvm.list
-RUN echo "deb-src http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-21 main" >> /etc/apt/sources.list.d/llvm.list
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-RUN apt update && apt install -y clang-21
-RUN ln -sf /usr/bin/clang-21 /usr/bin/clang && ln -sf /usr/bin/clang++-21 /usr/bin/clang++
-
 RUN apt update && apt install -y \
     build-essential \
+    g++ \
     cmake \
     ninja-build \
     git \

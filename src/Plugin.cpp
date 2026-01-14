@@ -66,7 +66,9 @@ namespace RayTracePlugin
         if (!shared::g_pGameResourceServiceServer)
             return false;
 
+        Log::Init();
         Tasks::Init();
+
         auto gamedata_path = std::string(Paths::GetRootDirectory() + "/gamedata.json");
         shared::g_pGameConfig = new CGameConfig(gamedata_path);
         char conf_error[255] = "";
