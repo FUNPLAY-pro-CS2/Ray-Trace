@@ -13,6 +13,7 @@ set(PROTO_TARGETS
         ${CSGO_PROTO_DIR}/gcsystemmsgs.proto
         ${CSGO_PROTO_DIR}/cstrike15_gcmessages.proto
         ${CSGO_PROTO_DIR}/cstrike15_usermessages.proto
+        ${CSGO_PROTO_DIR}/source2_steam_stats.proto
         ${CSGO_PROTO_DIR}/netmessages.proto
         ${CSGO_PROTO_DIR}/steammessages.proto
         ${CSGO_PROTO_DIR}/usercmd.proto
