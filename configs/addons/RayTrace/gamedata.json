@@ -41,14 +41,14 @@
   },
   "CBaseEntity_CollisionRulesChanged": {
     "offsets": {
-      "windows": 190,
-      "linux": 190
+      "windows": 185,
+      "linux": 184
     }
   },
-  "CBaseEntity_Teleport":{
+  "CBaseEntity_Teleport": {
     "offsets": {
-      "windows": 168,
-      "linux": 167
+      "windows": 162,
+      "linux": 161
     }
   },
   "GameEntitySystem": {
