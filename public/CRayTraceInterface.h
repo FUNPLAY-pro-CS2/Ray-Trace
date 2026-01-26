@@ -1,5 +1,4 @@
 #pragma once
-#include <optional>
 #include "vector.h"
 #include "gametrace.h"
 
@@ -158,18 +157,18 @@ constexpr InteractionLayers BuildShotMask(bool includePlayers, bool includeHitbo
 
 struct TraceOptions
 {
-    std::optional<InteractionLayers> InteractsWith{ MASK_SHOT_PHYSICS };
-    std::optional<InteractionLayers> InteractsExclude{};
-    bool DrawBeam{ false };
+    uint64_t InteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
+    uint64_t InteractsExclude = 0;
+    int DrawBeam = 0;
 };
 
 struct TraceResult
 {
-    Vector EndPos{};
-    CEntityInstance* HitEntity{};
-    float Fraction{};
-    bool AllSolid{};
-    Vector Normal{};
+    Vector EndPos;
+    CEntityInstance* HitEntity;
+    float Fraction;
+    int AllSolid;
+    Vector Normal;
 };
 
 class CRayTraceInterface
@@ -177,21 +176,27 @@ class CRayTraceInterface
 public:
     virtual ~CRayTraceInterface() = default;
 
-    virtual std::optional<TraceResult> TraceShape(
-        const Vector& origin,
-        const QAngle& viewangles,
-        CBaseEntity* ignorePlayer = nullptr,
-        const TraceOptions* opts = nullptr) = 0;
+    virtual bool TraceShape(
+        const Vector* origin,
+        const QAngle* viewangles,
+        CBaseEntity* ignorePlayer,
+        const TraceOptions* opts,
+        TraceResult* outResult
+    ) = 0;
 
-    virtual std::optional<TraceResult> TraceEndShape(
-        const Vector& origin,
-        const Vector& endOrigin,
-        CBaseEntity* ignorePlayer = nullptr,
-        const TraceOptions* opts = nullptr) = 0;
+    virtual bool TraceEndShape(
+        const Vector* origin,
+        const Vector* endOrigin,
+        CBaseEntity* ignorePlayer,
+        const TraceOptions* opts,
+        TraceResult* outResult
+    ) = 0;
 
-    virtual std::optional<TraceResult> TraceShapeEx(
-        const Vector& vecStart,
-        const Vector& vecEnd,
-        CTraceFilter& filterInc,
-        Ray_t rayInc) = 0;
+    virtual bool TraceShapeEx(
+        const Vector* vecStart,
+        const Vector* vecEnd,
+        CTraceFilter* filterInc,
+        Ray_t rayInc,
+        TraceResult* outResult
+    ) = 0;
 };

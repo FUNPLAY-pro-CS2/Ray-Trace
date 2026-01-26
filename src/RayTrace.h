@@ -50,31 +50,49 @@ namespace RayTracePlugin::RayTrace
     class CRayTrace : public CRayTraceInterface
     {
     public:
-        std::optional<TraceResult> TraceShape(
-            const Vector& origin,
-            const QAngle& viewangles,
+        bool TraceShape(
+            const Vector* origin,
+            const QAngle* viewangles,
             CBaseEntity* ignorePlayer,
-            const TraceOptions* opts) override
+            const TraceOptions* opts,
+            TraceResult* outResult) override
         {
-            return RayTrace::TraceShape(origin, viewangles, ignorePlayer, opts);
+            auto result = RayTrace::TraceShape(*origin, *viewangles, ignorePlayer, opts);
+            if (!result.has_value())
+                return false;
+
+            *outResult = result.value();
+            return true;
         }
 
-        std::optional<TraceResult> TraceEndShape(
-            const Vector& origin,
-            const Vector& endOrigin,
+        bool TraceEndShape(
+            const Vector* origin,
+            const Vector* endOrigin,
             CBaseEntity* ignorePlayer,
-            const TraceOptions* opts) override
+            const TraceOptions* opts,
+            TraceResult* outResult) override
         {
-            return RayTrace::TraceEndShape(origin, endOrigin, ignorePlayer, opts);
+            auto result = RayTrace::TraceEndShape(*origin, *endOrigin, ignorePlayer, opts);
+            if (!result.has_value())
+                return false;
+
+            *outResult = result.value();
+            return true;
         }
 
-        std::optional<TraceResult> TraceShapeEx(
-            const Vector& vecStart,
-            const Vector& vecEnd,
-            CTraceFilter& filterInc,
-            Ray_t rayInc) override
+        bool TraceShapeEx(
+            const Vector* vecStart,
+            const Vector* vecEnd,
+            CTraceFilter* filterInc,
+            Ray_t rayInc,
+            TraceResult* outResult) override
         {
-            return RayTrace::TraceShapeEx(vecStart, vecEnd, filterInc, rayInc);
+            auto result = RayTrace::TraceShapeEx(*vecStart, *vecEnd, *filterInc, rayInc);
+            if (!result.has_value())
+                return false;
+
+            *outResult = result.value();
+            return true;
         }
     };
 

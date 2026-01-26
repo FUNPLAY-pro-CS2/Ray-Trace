@@ -1,400 +1,315 @@
 # Ray-Trace
 
-**Shared ray tracing interface for Metamod:source & CounterStrikeSharp
-plugins**
+**Shared ray tracing interface for Metamod:Source & CounterStrikeSharp plugins**
 
 ------------------------------------------------------------------------
 
 ## Overview
 
-`Ray-Trace` is a lightweight **Metamod interface module** for\
+`Ray-Trace` is a lightweight **Metamod interface module** for  
 **Counter-Strike 2** servers.
 
-It exposes a shared interface:
+It exposes a shared interface: `CRayTraceInterface001` which can be consumed from:
 
-    CRayTraceInterface001
+- Native **Metamod C++ plugins**
+- Managed **CounterStrikeSharp C# plugins**
 
-which can be consumed from:
+The interface is implemented as a **C++ virtual class** and is accessed
+from C# by calling its **vtable functions directly** using a native handle.
 
--   Native **Metamod C++ plugins**
--   Managed **CounterStrikeSharp C# plugins**
-
-The goal is to provide a **single tracing backend** usable from both
-worlds\
+The goal is to provide a **single tracing backend** usable from both worlds  
 without duplicating engine detours.
 
 ------------------------------------------------------------------------
 
 ## Features
 
--   Metamod meta interface (`CRayTraceInterface001`)
--   Works in **C++ and C#**
--   Physics / hitbox / world trace presets
--   Custom collision masks
--   Optional debug beam rendering
--   Zero configuration
--   Ultra low overhead
+- Metamod meta interface (`CRayTraceInterface001`)
+- Works in **C++ and C#**
+- Physics / hitbox / world trace presets
+- Custom collision masks
+- Optional debug beam rendering
+- Zero configuration
+- Ultra low overhead
+- ABI-safe (no STL types in interface)
+- Virtual destructor for safe lifetime management
 
 ------------------------------------------------------------------------
 
-## Exposed Interface
+## Exposed Interface (C++)
 
-``` cpp
+```cpp
 class CRayTraceInterface
 {
 public:
     virtual ~CRayTraceInterface() = default;
 
-    virtual std::optional<TraceResult> TraceShape(
-        const Vector& origin,
-        const QAngle& viewangles,
-        CBaseEntity* ignorePlayer = nullptr,
-        const TraceOptions* opts = nullptr) = 0;
+    virtual bool TraceShape(
+        const Vector* pOrigin,
+        const QAngle* pViewAngles,
+        CBaseEntity* pIgnorePlayer,
+        const TraceOptions* pOpts,
+        TraceResult* pOutResult
+    ) = 0;
 
-    virtual std::optional<TraceResult> TraceEndShape(
-        const Vector& origin,
-        const Vector& endOrigin,
-        CBaseEntity* ignorePlayer = nullptr,
-        const TraceOptions* opts = nullptr) = 0;
+    virtual bool TraceEndShape(
+        const Vector* pOrigin,
+        const Vector* pEndOrigin,
+        CBaseEntity* pIgnorePlayer,
+        const TraceOptions* pOpts,
+        TraceResult* pOutResult
+    ) = 0;
 
-    virtual std::optional<TraceResult> TraceShapeEx(
-        const Vector& vecStart,
-        const Vector& vecEnd,
-        CTraceFilter& filterInc,
-        Ray_t rayInc) = 0;
+    virtual bool TraceShapeEx(
+        const Vector* pVecStart,
+        const Vector* pVecEnd,
+        CTraceFilter* pFilterInc,
+        Ray_t rayInc,
+        TraceResult* pOutResult
+    ) = 0;
 };
 ```
+**Return value:**
+- true → trace hit something, TraceResult is valid
+- false → no hit
 
 ------------------------------------------------------------------------
 
 ## Getting the interface
-
-### C++ (Metamod plugin)
-
-``` cpp
-int ret = 0;
-
-auto* rayTraceIface = static_cast<CRayTraceInterface*>(
-    g_SMAPI->MetaFactory("CRayTraceInterface001", &ret, nullptr)
-);
-
-if (ret == META_IFACE_FAILED || !rayTraceIface)
-{
-    FP_ERROR("Failed to lookup Ray-Trace interface!");
-}
-```
-
-### C# (CounterStrikeSharp plugin)
-
-``` csharp
-private nint _handle;
-
-public override void Load(bool hotReload)
-{
-    _handle = Utilities.MetaFactory("CRayTraceInterface001");
-
-    if (_handle == nint.Zero)
-    {
-        throw new Exception("Failed to get Ray-Trace interface handle");
-    }
-}
-```
-
-------------------------------------------------------------------------
-
-## Calling methods from C++ (Metamod)
-
-On the native side you simply call the interface methods directly
-(no vtable binding required).
-
-### Basic usage
+**C++ (Metamod plugin)**
 
 ```cpp
-CRayTraceInterface* g_RayTrace = nullptr;
+CRayTraceInterface* g_pRayTrace = nullptr;
+bool g_bRayTraceLoaded = false;
 
-bool InitRayTrace()
+bool LoadRayTrace()
 {
-    int ret = 0;
+    int iRet = 0;
 
-    g_RayTrace = static_cast<CRayTraceInterface*>(
-        g_SMAPI->MetaFactory("CRayTraceInterface001", &ret, nullptr)
+    g_pRayTrace = static_cast<CRayTraceInterface*>(
+        g_SMAPI->MetaFactory("CRayTraceInterface001", &iRet, nullptr)
     );
 
-    if (ret == META_IFACE_FAILED || !g_RayTrace)
+    if (iRet == META_IFACE_FAILED || !g_pRayTrace)
     {
         FP_ERROR("Failed to lookup Ray-Trace interface!");
         return false;
     }
 
+    g_bRayTraceLoaded = true;
     return true;
 }
 ```
 
----
+**C# (CounterStrikeSharp plugin)**
+```csharp
+private nint g_pRayTraceHandle = nint.Zero;
+private bool g_bRayTraceLoaded = false;
 
-### Calling TraceShape
-
-```cpp
-TraceOptions opts;
-opts.InteractsWith = MASK_SHOT_FULL;
-opts.DrawBeam = true;
-
-auto result = g_RayTrace->TraceShape(
-    origin,
-    viewAngles,
-    ignorePlayer,
-    &opts
-);
-
-if (result.has_value())
+public override void Load(bool hotReload)
 {
-    auto& tr = result.value();
+    g_pRayTraceHandle = Utilities.MetaFactory("CRayTraceInterface001");
 
-    Msg("Hit fraction: %f\n", tr.Fraction);
-    Msg("End pos: %f %f %f\n",
-        tr.EndPos.x,
-        tr.EndPos.y,
-        tr.EndPos.z);
+    if (g_pRayTraceHandle == nint.Zero)
+    {
+        throw new Exception("Failed to get Ray-Trace interface handle");
+    }
+
+    Bind();
+    g_bRayTraceLoaded = true;
+}
+```
+The returned handle is a pointer to the native CRayTraceInterface object.
+
+------------------------------------------------------------------------
+
+## Calling methods from C++ (Metamod)
+**TraceShape example**
+```cpp
+Vector vecOrigin{};
+QAngle angView{};
+TraceOptions traceOpts{};
+traceOpts.InteractsWith = static_cast<uint64_t>(MASK_SHOT_FULL);
+traceOpts.DrawBeam = 1;
+
+TraceResult traceResult{};
+
+if (g_pRayTrace && g_bRayTraceLoaded)
+{
+    bool bHit = g_pRayTrace->TraceShape(
+        &vecOrigin,
+        &angView,
+        nullptr,
+        &traceOpts,
+        &traceResult
+    );
+
+    if (bHit)
+    {
+        Msg("Hit fraction: %f\n", traceResult.Fraction);
+        Msg("End pos: %f %f %f\n",
+            traceResult.EndPos.x,
+            traceResult.EndPos.y,
+            traceResult.EndPos.z);
+    }
 }
 ```
 
----
-
-### Calling TraceEndShape
-
+**TraceEndShape example**
 ```cpp
-auto result = g_RayTrace->TraceEndShape(
-    startPos,
-    endPos,
-    ignorePlayer,
-    &opts
+TraceResult traceResult{};
+
+bool bHit = g_pRayTrace->TraceEndShape(
+    &vecStartPos,
+    &vecEndPos,
+    nullptr,
+    &traceOpts,
+    &traceResult
 );
 ```
 
----
-
-### Calling TraceShapeEx (low-level)
-
+**TraceShapeEx (low-level)**
 ```cpp
-Ray_t ray;
+Ray_t ray{};
 CTraceFilter filter(
     static_cast<uint64_t>(MASK_SHOT_FULL),
     COLLISION_GROUP_DEFAULT,
     true
 );
 
-auto result = g_RayTrace->TraceShapeEx(
-    startPos,
-    endPos,
-    filter,
-    ray
+TraceResult traceResult{};
+
+bool bHit = g_pRayTrace->TraceShapeEx(
+    &vecStartPos,
+    &vecEndPos,
+    &filter,
+    ray,
+    &traceResult
 );
 ```
 
 ------------------------------------------------------------------------
 
 ## Calling methods from C# (CounterStrikeSharp plugin)
+```csharp
+private delegate bool TraceShapeFn(
+    nint pThis,
+    nint pOrigin,
+    nint pAngles,
+    nint pIgnoreEntity,
+    nint pOptions,
+    nint pOutResult
+);
 
-``` csharp
-private Func<nint, nint, nint, nint, nint, nint>? _traceShape;
-private Func<nint, nint, nint, nint, nint, nint>? _traceEndShape;
-private Func<nint, nint, nint, nint, nint, nint>? _traceShapeEx;
+private TraceShapeFn? _traceShape;
+private TraceShapeFn? _traceEndShape;
+private TraceShapeFn? _traceShapeEx;
 
 private void Bind()
 {
-    // index 1 - TraceShape
-    _traceShape = VirtualFunction.Create<
-        nint, // this
-        nint, // Vector*
-        nint, // QAngle*
-        nint, // ignore entity
-        nint, // TraceOptions*
-        nint
-    >(_handle, 1);
-
-    // index 2 - TraceEndShape
-    _traceEndShape = VirtualFunction.Create<
-        nint, // this
-        nint, // start Vector*
-        nint, // end Vector*
-        nint, // ignore entity
-        nint, // TraceOptions*
-        nint
-    >(_handle, 2);
-
-    // index 3 - TraceShapeEx
-    _traceShapeEx = VirtualFunction.Create<
-        nint, // this
-        nint, // start Vector*
-        nint, // end Vector*
-        nint, // CTraceFilter*
-        nint, // Ray_t*
-        nint
-    >(_handle, 3);
+    _traceShape = VirtualFunction.Create<TraceShapeFn>(g_pRayTraceHandle, 1);
+    _traceEndShape = VirtualFunction.Create<TraceShapeFn>(g_pRayTraceHandle, 2);
+    _traceShapeEx = VirtualFunction.Create<TraceShapeFn>(g_pRayTraceHandle, 3);
 }
 
-public nint TraceShape(
-    nint origin,
-    nint angles,
-    nint ignoreEntity,
-    nint options)
+public bool TraceShape(
+    nint pOrigin,
+    nint pAngles,
+    nint pIgnoreEntity,
+    nint pOptions,
+    nint pOutResult)
 {
+    if (!g_bRayTraceLoaded || g_pRayTraceHandle == nint.Zero)
+        return false;
+
     return _traceShape!(
-        _handle,
-        origin,
-        angles,
-        ignoreEntity,
-        options
-    );
-}
-
-public nint TraceEndShape(
-    nint start,
-    nint end,
-    nint ignoreEntity,
-    nint options)
-{
-    return _traceEndShape!(
-        _handle,
-        start,
-        end,
-        ignoreEntity,
-        options
-    );
-}
-
-public nint TraceShapeEx(
-    nint start,
-    nint end,
-    nint filter,
-    nint ray)
-{
-    return _traceShapeEx!(
-        _handle,
-        start,
-        end,
-        filter,
-        ray
+        g_pRayTraceHandle,
+        pOrigin,
+        pAngles,
+        pIgnoreEntity,
+        pOptions,
+        pOutResult
     );
 }
 ```
 
 ------------------------------------------------------------------------
 
-## Collision masks (C#)
+## Low-level usage from C# (Ray_t & CTraceFilter)
 
-``` csharp
-using System;
+When using the low-level method `TraceShapeEx` from a C# plugin, the plugin
+must provide its own native-compatible implementations of the following
+engine structures:
 
-[Flags]
-public enum InteractionLayers : ulong
+- `Ray_t`
+- `CTraceFilter`
+
+These structures are not exposed directly by the Ray-Trace interface and
+must be recreated in managed code with correct memory layout.
+
+### Ray_t (C#)
+
+The C# plugin must define a struct that matches the native `Ray_t` layout
+used by the engine.
+
+Example (simplified):
+
+```csharp
+[StructLayout(LayoutKind.Sequential)]
+public struct Ray_t
 {
-    Solid = 0x1,
-    Hitboxes = 0x2,
-    Trigger = 0x4,
-    Sky = 0x8,
-    PlayerClip = 0x10,
-    NPCClip = 0x20,
-    BlockLOS = 0x40,
-    BlockLight = 0x80,
-    Ladder = 0x100,
-    Pickup = 0x200,
-    BlockSound = 0x400,
-    NoDraw = 0x800,
-    Window = 0x1000,
-    PassBullets = 0x2000,
-    WorldGeometry = 0x4000,
-    Water = 0x8000,
-    Slime = 0x10000,
-    TouchAll = 0x20000,
-    Player = 0x40000,
-    NPC = 0x80000,
-    Debris = 0x100000,
-    Physics_Prop = 0x200000,
-    NavIgnore = 0x400000,
-    NavLocalIgnore = 0x800000,
-    PostProcessingVolume = 0x1000000,
-    UnusedLayer3 = 0x2000000,
-    CarriedObject = 0x4000000,
-    PushAway = 0x8000000,
-    ServerEntityOnClient = 0x10000000,
-    CarriedWeapon = 0x20000000,
-    StaticLevel = 0x40000000,
-    csgo_team1 = 0x80000000,
-    csgo_team2 = 0x100000000,
-    csgo_grenadeclip = 0x200000000,
-    csgo_droneclip = 0x400000000,
-    csgo_moveable = 0x800000000,
-    csgo_opaque = 0x1000000000,
-    csgo_monster = 0x2000000000,
-    csgo_thrown_grenade = 0x8000000000,
-    FUNPLAY_IGNORE_PLAYER = (0x8000000000ul << 1)
-}
-
-public static class TraceMasks
-{
-    public const InteractionLayers MASK_SHOT_PHYSICS =
-        InteractionLayers.Solid |
-        InteractionLayers.PlayerClip |
-        InteractionLayers.Window |
-        InteractionLayers.PassBullets |
-        InteractionLayers.Player |
-        InteractionLayers.NPC |
-        InteractionLayers.Physics_Prop;
-
-    public const InteractionLayers MASK_SHOT_HITBOX =
-        InteractionLayers.Hitboxes |
-        InteractionLayers.Player |
-        InteractionLayers.NPC;
-
-    public const InteractionLayers MASK_SHOT_FULL =
-        MASK_SHOT_PHYSICS |
-        InteractionLayers.Hitboxes;
-
-    public const InteractionLayers MASK_WORLD_ONLY =
-        InteractionLayers.Solid |
-        InteractionLayers.Window |
-        InteractionLayers.PassBullets;
-
-    public const InteractionLayers MASK_GRENADE =
-        InteractionLayers.Solid |
-        InteractionLayers.Window |
-        InteractionLayers.Physics_Prop |
-        InteractionLayers.PassBullets;
-
-    public const InteractionLayers MASK_PLAYER_MOVE =
-        InteractionLayers.Solid |
-        InteractionLayers.Window |
-        InteractionLayers.PlayerClip |
-        InteractionLayers.PassBullets;
-
-    public const InteractionLayers MASK_NPC_MOVE =
-        InteractionLayers.Solid |
-        InteractionLayers.Window |
-        InteractionLayers.NPCClip |
-        InteractionLayers.PassBullets;
+    public Vector3 m_vecStart;
+    public Vector3 m_vecDelta;
+    public byte m_IsRay;
+    public byte m_IsSwept;
 }
 ```
+(Exact layout depends on the engine version and must match native memory.)
+
+**CTraceFilter (C#)**
+For `CTraceFilter`, the plugin must:
+- Define a managed struct matching the native layout.
+- Resolve the CTraceFilter vtable pointer using a signature scan.
+- Assign the resolved vtable to the struct before calling TraceShapeEx.
+
+This is required because CTraceFilter is a polymorphic C++ class and its
+virtual table is not directly exposed to managed code.
+
+Example concept:
+```csharp
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct CTraceFilter
+{
+    public nint __vtable;
+    public ulong m_nInteractsWith;
+    public T ...;
+}
+```
+The vtable pointer must be resolved at runtime using a signature scan
+against the game binary.
+
+**Important notes**
+- This setup is only required when using the low-level API:
+- TraceShapeEx(...)
+- High-level functions (TraceShape, TraceEndShape) do not require custom Ray_t or CTraceFilter handling from C#.
+- Incorrect structure layout or invalid vtable resolution will result in crashes or undefined behavior.
+- This is considered an advanced use case intended for engine-level plugins.
 
 ------------------------------------------------------------------------
 
-## Directory layout
+## Notes about ABI & Destructor
+- CRayTraceInterface has a virtual destructor.
+- The object is owned by the Ray-Trace Metamod module.
+- Plugins must never call delete on the interface pointer.
+- C# must only clear its handle on unload.
+- All parameters are passed as native pointers (nint).
 
-    addons/
-    └── Ray-Trace/
-        └── bin/linuxsteamrt64/Ray-Trace.so
-
-------------------------------------------------------------------------
-
-## Build
-
-### Requirements
-
--   HL2SDK-CS2
--   Metamod:Source
--   CMake
-
-``` bash
+# Build
+## Requirements
+- HL2SDK-CS2
+- Metamod:Source
+- CMake
+```bash
 git clone https://github.com/FUNPLAY-pro-CS2/Ray-Trace.git
 cd Ray-Trace
 git submodule update --init --recursive
@@ -404,12 +319,9 @@ docker compose -f docker/docker-compose.yml up
 ------------------------------------------------------------------------
 
 ## License
-
-GPLv3
-
-------------------------------------------------------------------------
+GPLv3  
+https://www.gnu.org/licenses/gpl-3.0.en.html
 
 ## Author
-
-**Michal "Slynx" Přikryl**\
+**Michal "Slynx" Přikryl**  
 https://slynxdev.cz

@@ -47,7 +47,7 @@ namespace RayTracePlugin::RayTrace
 
         beam->m_clrRender().SetColor(color.r(), color.g(), color.b(), color.a());
         beam->m_fWidth() = 1.5f;
-        beam->m_nRenderMode() = kRenderGlow;
+        beam->m_nRenderMode() = kRenderNormal;
         beam->m_nRenderFX() = kRenderFxNone;
 
         beam->Teleport(&start, &VectorExtends::RotationZero, &VectorExtends::VectorZero);
@@ -95,10 +95,16 @@ namespace RayTracePlugin::RayTrace
 
         CTraceFilterEx filter = ignorePlayer ? CTraceFilterEx(ignorePlayer) : CTraceFilterEx();
 
+        filter.m_nInteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
+        filter.m_nInteractsExclude = 0;
+
         if (opts)
         {
-            if (opts->InteractsWith) filter.m_nInteractsWith = static_cast<uint64_t>(*opts->InteractsWith);
-            if (opts->InteractsExclude) filter.m_nInteractsExclude = static_cast<uint64_t>(*opts->InteractsExclude);
+            if (opts->InteractsWith != 0)
+                filter.m_nInteractsWith = opts->InteractsWith;
+
+            if (opts->InteractsExclude != 0)
+                filter.m_nInteractsExclude = opts->InteractsExclude;
         }
 
         Ray_t ray;
@@ -121,10 +127,16 @@ namespace RayTracePlugin::RayTrace
     {
         CTraceFilterEx filter = ignorePlayer ? CTraceFilterEx(ignorePlayer) : CTraceFilterEx();
 
+        filter.m_nInteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
+        filter.m_nInteractsExclude = 0;
+
         if (opts)
         {
-            if (opts->InteractsWith) filter.m_nInteractsWith = static_cast<uint64_t>(*opts->InteractsWith);
-            if (opts->InteractsExclude) filter.m_nInteractsExclude = static_cast<uint64_t>(*opts->InteractsExclude);
+            if (opts->InteractsWith != 0)
+                filter.m_nInteractsWith = opts->InteractsWith;
+
+            if (opts->InteractsExclude != 0)
+                filter.m_nInteractsExclude = opts->InteractsExclude;
         }
 
         Ray_t ray;
