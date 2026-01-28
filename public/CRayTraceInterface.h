@@ -134,27 +134,6 @@ static_assert(
     "MASK_SHOT_PHYSICS mismatch!"
 );
 
-constexpr InteractionLayers RemovePlayers(InteractionLayers m)
-{
-    return static_cast<InteractionLayers>(
-        static_cast<uint64_t>(m) &
-        ~static_cast<uint64_t>(InteractionLayers::Player)
-    );
-}
-
-constexpr InteractionLayers BuildShotMask(bool includePlayers, bool includeHitboxes)
-{
-    InteractionLayers m = MASK_SHOT_PHYSICS;
-
-    if (!includePlayers)
-        m = RemovePlayers(m);
-
-    if (includeHitboxes)
-        m |= InteractionLayers::Hitboxes;
-
-    return m;
-}
-
 struct TraceOptions
 {
     uint64_t InteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
