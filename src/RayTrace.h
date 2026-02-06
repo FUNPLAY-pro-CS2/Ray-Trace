@@ -84,10 +84,10 @@ namespace RayTracePlugin::RayTrace
             const Vector* vecStart,
             const Vector* vecEnd,
             CTraceFilter* filterInc,
-            Ray_t rayInc,
+            Ray_t* rayInc,
             TraceResult* outResult) override
         {
-            auto result = RayTrace::TraceShapeEx(*vecStart, *vecEnd, *filterInc, rayInc);
+            auto result = RayTrace::TraceShapeEx(*vecStart, *vecEnd, *filterInc, *rayInc);
             if (!result.has_value())
                 return false;
 

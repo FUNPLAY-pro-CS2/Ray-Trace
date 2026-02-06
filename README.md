@@ -66,7 +66,7 @@ public:
         const Vector* pVecStart,
         const Vector* pVecEnd,
         CTraceFilter* pFilterInc,
-        Ray_t rayInc,
+        Ray_t* rayInc,
         TraceResult* pOutResult
     ) = 0;
 };
