@@ -136,6 +136,7 @@ static_assert(
 
 struct TraceOptions
 {
+    uint64_t InteractsAs = 0;
     uint64_t InteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
     uint64_t InteractsExclude = 0;
     int DrawBeam = 0;
@@ -158,7 +159,7 @@ public:
     virtual bool TraceShape(
         const Vector* origin,
         const QAngle* viewangles,
-        CBaseEntity* ignorePlayer,
+        CBaseEntity* ignoreEntity,
         const TraceOptions* opts,
         TraceResult* outResult
     ) = 0;
@@ -166,7 +167,17 @@ public:
     virtual bool TraceEndShape(
         const Vector* origin,
         const Vector* endOrigin,
-        CBaseEntity* ignorePlayer,
+        CBaseEntity* ignoreEntity,
+        const TraceOptions* opts,
+        TraceResult* outResult
+    ) = 0;
+
+    virtual bool TraceHullShape(
+        const Vector* vecStart,
+        const Vector* vecEnd,
+        const Vector* hullMins,
+        const Vector* hullMaxs,
+        CBaseEntity* ignoreEntity,
         const TraceOptions* opts,
         TraceResult* outResult
     ) = 0;

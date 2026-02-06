@@ -82,7 +82,7 @@ namespace RayTracePlugin::RayTrace
     std::optional<TraceResult> TraceShape(
         const Vector& origin,
         const QAngle& viewangles,
-        CBaseEntity* ignorePlayer,
+        CBaseEntity* ignoreEntity,
         const TraceOptions* opts)
     {
         Vector forward;
@@ -93,14 +93,18 @@ namespace RayTracePlugin::RayTrace
             origin.z + forward.z * 8192.f
         };
 
-        CTraceFilterEx filter = ignorePlayer ? CTraceFilterEx(ignorePlayer) : CTraceFilterEx();
+        CTraceFilterEx filter = ignoreEntity ? CTraceFilterEx(ignoreEntity) : CTraceFilterEx();
 
+        filter.m_nInteractsAs = 0;
         filter.m_nInteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
         filter.m_nInteractsExclude = 0;
 
         if (opts)
         {
-            if (opts->InteractsWith != 0)
+            if (opts->InteractsAs != 0)
+                filter.m_nInteractsAs = opts->InteractsAs;
+
+            if (opts->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = opts->InteractsWith;
 
             if (opts->InteractsExclude != 0)
@@ -122,17 +126,21 @@ namespace RayTracePlugin::RayTrace
     std::optional<TraceResult> TraceEndShape(
         const Vector& origin,
         const Vector& endOrigin,
-        CBaseEntity* ignorePlayer,
+        CBaseEntity* ignoreEntity,
         const TraceOptions* opts)
     {
-        CTraceFilterEx filter = ignorePlayer ? CTraceFilterEx(ignorePlayer) : CTraceFilterEx();
+        CTraceFilterEx filter = ignoreEntity ? CTraceFilterEx(ignoreEntity) : CTraceFilterEx();
 
+        filter.m_nInteractsAs = 0;
         filter.m_nInteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
         filter.m_nInteractsExclude = 0;
 
         if (opts)
         {
-            if (opts->InteractsWith != 0)
+            if (opts->InteractsAs != 0)
+                filter.m_nInteractsAs = opts->InteractsAs;
+
+            if (opts->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = opts->InteractsWith;
 
             if (opts->InteractsExclude != 0)
@@ -146,6 +154,39 @@ namespace RayTracePlugin::RayTrace
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
             DrawBeam(origin, res ? res->EndPos : endOrigin, col);
+        }
+
+        return res;
+    }
+
+    std::optional<TraceResult> TraceHullShape(const Vector &vecStart, const Vector &vecEnd, const Vector &hullMins,
+        const Vector &hullMaxs, CBaseEntity *ignoreEntity, const TraceOptions *opts) {
+        CTraceFilterEx filter = ignoreEntity ? CTraceFilterEx(ignoreEntity) : CTraceFilterEx();
+
+        filter.m_nInteractsAs = 0;
+        filter.m_nInteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
+        filter.m_nInteractsExclude = 0;
+
+        if (opts)
+        {
+            if (opts->InteractsAs != 0)
+                filter.m_nInteractsAs = opts->InteractsAs;
+
+            if (opts->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
+                filter.m_nInteractsWith = opts->InteractsWith;
+
+            if (opts->InteractsExclude != 0)
+                filter.m_nInteractsExclude = opts->InteractsExclude;
+        }
+
+        Ray_t ray;
+        ray.Init(hullMins, hullMaxs);
+        auto res = TraceShapeEx(vecStart, vecEnd, filter, ray);
+
+        if (opts && opts->DrawBeam)
+        {
+            Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
+            DrawBeam(vecStart, res ? res->EndPos : vecEnd, col);
         }
 
         return res;

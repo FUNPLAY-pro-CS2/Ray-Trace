@@ -32,13 +32,21 @@ namespace RayTracePlugin::RayTrace
     std::optional<TraceResult> TraceShape(
         const Vector& origin,
         const QAngle& viewangles,
-        CBaseEntity* ignorePlayer = nullptr,
+        CBaseEntity* ignoreEntity = nullptr,
         const TraceOptions* opts = nullptr);
 
     std::optional<TraceResult> TraceEndShape(
         const Vector& origin,
         const Vector& endOrigin,
-        CBaseEntity* ignorePlayer = nullptr,
+        CBaseEntity* ignoreEntity = nullptr,
+        const TraceOptions* opts = nullptr);
+
+    std::optional<TraceResult> TraceHullShape(
+        const Vector& vecStart,
+        const Vector& vecEnd,
+        const Vector& hullMins,
+        const Vector& hullMaxs,
+        CBaseEntity* ignoreEntity = nullptr,
         const TraceOptions* opts = nullptr);
 
     std::optional<TraceResult> TraceShapeEx(
@@ -53,11 +61,11 @@ namespace RayTracePlugin::RayTrace
         bool TraceShape(
             const Vector* origin,
             const QAngle* viewangles,
-            CBaseEntity* ignorePlayer,
+            CBaseEntity* ignoreEntity,
             const TraceOptions* opts,
             TraceResult* outResult) override
         {
-            auto result = RayTrace::TraceShape(*origin, *viewangles, ignorePlayer, opts);
+            auto result = RayTrace::TraceShape(*origin, *viewangles, ignoreEntity, opts);
             if (!result.has_value())
                 return false;
 
@@ -68,11 +76,28 @@ namespace RayTracePlugin::RayTrace
         bool TraceEndShape(
             const Vector* origin,
             const Vector* endOrigin,
-            CBaseEntity* ignorePlayer,
+            CBaseEntity* ignoreEntity,
             const TraceOptions* opts,
             TraceResult* outResult) override
         {
-            auto result = RayTrace::TraceEndShape(*origin, *endOrigin, ignorePlayer, opts);
+            auto result = RayTrace::TraceEndShape(*origin, *endOrigin, ignoreEntity, opts);
+            if (!result.has_value())
+                return false;
+
+            *outResult = result.value();
+            return true;
+        }
+
+        bool TraceHullShape(
+            const Vector* vecStart,
+            const Vector* vecEnd,
+            const Vector* hullMins,
+            const Vector* hullMaxs,
+            CBaseEntity* ignoreEntity,
+            const TraceOptions* opts,
+            TraceResult* outResult) override
+        {
+            auto result = RayTrace::TraceHullShape(*vecStart, *vecEnd, *hullMins, *hullMaxs, ignoreEntity, opts);
             if (!result.has_value())
                 return false;
 

@@ -62,22 +62,25 @@ namespace RayTrace
 		MASK_NPC_MOVE = Solid | Window | NPCClip | PassBullets
 	}
 
-	[StructLayout(LayoutKind.Explicit, Size = 24)]
+	[StructLayout(LayoutKind.Explicit, Size = 32)]
 	public struct TraceOptions
 	{
-		[FieldOffset(0)] public ulong InteractsWith;
-		[FieldOffset(8)] public ulong InteractsExclude;
-		[FieldOffset(16)] public int DrawBeam;
+		[FieldOffset(0)] public ulong InteractsAs;
+		[FieldOffset(8)] public ulong InteractsWith;
+		[FieldOffset(16)] public ulong InteractsExclude;
+		[FieldOffset(24)] public int DrawBeam;
 
 		public TraceOptions()
 		{
+		  InteractsAs = 0;
 			InteractsWith = (ulong)InteractionLayers.MASK_SHOT_PHYSICS;
 			InteractsExclude = 0;
 			DrawBeam = 0;
 		}
 
-		public TraceOptions(InteractionLayers interactsWith, InteractionLayers interactsExclude = 0, bool drawBeam = false)
+		public TraceOptions(InteractionLayers interactsAs, InteractionLayers interactsWith, InteractionLayers interactsExclude = 0, bool drawBeam = false)
 		{
+		  InteractsAs = (ulong)interactsAs;
 			InteractsWith = (ulong)interactsWith;
 			InteractsExclude = (ulong)interactsExclude;
 			DrawBeam = drawBeam ? 1 : 0;
@@ -111,6 +114,7 @@ namespace RayTrace
 
 		private static Func<nint, nint, nint, nint, nint, nint, bool>? _traceShape;
 		private static Func<nint, nint, nint, nint, nint, nint, bool>? _traceEndShape;
+		private static Func<nint, nint, nint, nint, nint, nint, nint, nint, bool>? _traceHullShape;
 
 		public static void Init()
 		{
@@ -127,6 +131,7 @@ namespace RayTrace
 		{
 			_traceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 2);
 			_traceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 3);
+			_traceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 4);
 		}
 
 		public static unsafe bool TraceShape(Vector origin, QAngle angles, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
@@ -163,6 +168,29 @@ namespace RayTrace
 			bool success = _traceEndShape!(g_pRayTraceHandle,
 										   origin.Handle,
 										   endOrigin.Handle,
+										   ignoreEntity?.Handle ?? nint.Zero,
+										   (nint)(&optionsBuffer),
+										   (nint)(&resultBuffer));
+
+			result = resultBuffer;
+			return success;
+		}
+
+    public static unsafe bool TraceHullShape(Vector vecStart, Vector vecEnd, Vector hullMins, Vector hullMaxs, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
+		{
+			result = default;
+
+			if (!g_bRayTraceLoaded || g_pRayTraceHandle == nint.Zero)
+				return false;
+
+			TraceResult resultBuffer = default;
+			TraceOptions optionsBuffer = options;
+
+			bool success = _traceHullShape!(g_pRayTraceHandle,
+										   vecStart.Handle,
+										   vecEnd.Handle,
+										   hullMins.Handle,
+										   hullMaxs.Handle,
 										   ignoreEntity?.Handle ?? nint.Zero,
 										   (nint)(&optionsBuffer),
 										   (nint)(&resultBuffer));

@@ -49,7 +49,7 @@ public:
     virtual bool TraceShape(
         const Vector* pOrigin,
         const QAngle* pViewAngles,
-        CBaseEntity* pIgnorePlayer,
+        CBaseEntity* pIgnoreEntity,
         const TraceOptions* pOpts,
         TraceResult* pOutResult
     ) = 0;
@@ -57,7 +57,17 @@ public:
     virtual bool TraceEndShape(
         const Vector* pOrigin,
         const Vector* pEndOrigin,
-        CBaseEntity* pIgnorePlayer,
+        CBaseEntity* pIgnoreEntity,
+        const TraceOptions* pOpts,
+        TraceResult* pOutResult
+    ) = 0;
+
+    virtual bool TraceHullShape(
+        const Vector* pVecStart,
+        const Vector* pVecEnd,
+        const Vector* pHullMins,
+        const Vector* pHullMaxs,
+        CBaseEntity* pIgnoreEntity,
         const TraceOptions* pOpts,
         TraceResult* pOutResult
     ) = 0;
@@ -196,10 +206,10 @@ public void DoTrace(CCSPlayerController player)
 
 Due to C++ ABI differences:
 
-| Platform            | TraceShape index | TraceEndShape index |
-| ------------------- | ---------------- | ------------------- |
-| Linux (Itanium ABI) | 2                | 3                   |
-| Windows (MSVC ABI)  | 1                | 2                   |
+| Platform            | TraceShape index | TraceEndShape index | TraceHullShape index |
+| ------------------- | ---------------- | ------------------- |----------------------|
+| Linux (Itanium ABI) | 2                | 3                   | 4                    |
+| Windows (MSVC ABI)  | 1                | 2                   | 3                    |
 
 `public/Example.cs` applies Itanium offsets by default.
 
