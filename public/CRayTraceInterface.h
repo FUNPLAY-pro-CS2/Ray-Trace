@@ -144,11 +144,15 @@ struct TraceOptions
 
 struct TraceResult
 {
-    Vector EndPos;
+    float EndPosX;
+    float EndPosY;
+    float EndPosZ;
     CEntityInstance* HitEntity;
     float Fraction;
     int AllSolid;
-    Vector Normal;
+    float NormalX;
+    float NormalY;
+    float NormalZ;
 };
 
 class CRayTraceInterface

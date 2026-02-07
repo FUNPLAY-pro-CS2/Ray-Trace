@@ -87,24 +87,24 @@ namespace RayTrace
 		}
 	}
 
-	[StructLayout(LayoutKind.Explicit, Size = 44)]
-	public struct TraceResult
-	{
-		[FieldOffset(0)] public float EndPosX;
-		[FieldOffset(4)] public float EndPosY;
-		[FieldOffset(8)] public float EndPosZ;
-		[FieldOffset(16)] public nint HitEntity;
-		[FieldOffset(24)] public float Fraction;
-		[FieldOffset(28)] public int AllSolid;
-		[FieldOffset(32)] public float NormalX;
-		[FieldOffset(36)] public float NormalY;
-		[FieldOffset(40)] public float NormalZ;
+	[StructLayout(LayoutKind.Explicit, Size = 48)]
+  public struct TraceResult
+  {
+    [FieldOffset(0)]  public float EndPosX;
+    [FieldOffset(4)]  public float EndPosY;
+    [FieldOffset(8)]  public float EndPosZ;
+    [FieldOffset(16)] public nint HitEntity;
+    [FieldOffset(24)] public float Fraction;
+    [FieldOffset(28)] public int AllSolid;
+    [FieldOffset(32)] public float NormalX;
+    [FieldOffset(36)] public float NormalY;
+    [FieldOffset(40)] public float NormalZ;
 
-		public Vector3 EndPos => new(EndPosX, EndPosY, EndPosZ);
-		public Vector3 Normal => new(NormalX, NormalY, NormalZ);
-		public bool DidHit => Fraction < 1.0f;
-		public bool IsAllSolid => AllSolid != 0;
-	}
+    public Vector3 EndPos => new(EndPosX, EndPosY, EndPosZ);
+    public Vector3 Normal => new(NormalX, NormalY, NormalZ);
+    public bool DidHit => Fraction < 1.0f;
+    public bool IsAllSolid => AllSolid != 0;
+  }
 #endregion
 
 	public static class CRayTrace

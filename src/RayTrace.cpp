@@ -61,7 +61,10 @@ namespace RayTracePlugin::RayTrace
         CTraceFilter& filterInc,
         Ray_t rayInc)
     {
-        if (!s_TraceShape) return std::nullopt;
+        if (!s_TraceShape) {
+            FP_ERROR("CNavPhysicsInterface::TraceShape is not bound!");
+            return std::nullopt;
+        }
 
         CGameTrace tr{};
         Vector startCopy = start;
@@ -70,11 +73,15 @@ namespace RayTracePlugin::RayTrace
                      &filterInc, &tr);
 
         TraceResult r{};
-        r.EndPos = tr.m_vEndPos;
+        r.EndPosX = tr.m_vEndPos.x;
+        r.EndPosY = tr.m_vEndPos.y;
+        r.EndPosZ = tr.m_vEndPos.z;
         r.HitEntity = tr.m_pEnt;
         r.Fraction = tr.m_flFraction;
         r.AllSolid = tr.m_bStartInSolid;
-        r.Normal = tr.m_vHitNormal;
+        r.NormalX = tr.m_vHitNormal.x;
+        r.NormalY = tr.m_vHitNormal.y;
+        r.NormalZ = tr.m_vHitNormal.z;
 
         return r;
     }
@@ -117,7 +124,7 @@ namespace RayTracePlugin::RayTrace
         if (opts && opts->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(origin, res ? res->EndPos : endOrigin, col);
+            DrawBeam(origin, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : endOrigin, col);
         }
 
         return res;
@@ -153,7 +160,7 @@ namespace RayTracePlugin::RayTrace
         if (opts && opts->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(origin, res ? res->EndPos : endOrigin, col);
+            DrawBeam(origin, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : endOrigin, col);
         }
 
         return res;
@@ -186,7 +193,7 @@ namespace RayTracePlugin::RayTrace
         if (opts && opts->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res ? res->EndPos : vecEnd, col);
+            DrawBeam(vecStart, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : vecEnd, col);
         }
 
         return res;
