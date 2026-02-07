@@ -129,9 +129,20 @@ namespace RayTrace
 
 		private static void Bind()
 		{
-			_traceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 2);
-			_traceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 3);
-			_traceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, 4);
+			int traceShapeIndex = 2;
+			int traceEndShapeIndex = 3;
+			int traceHullShapeIndex = 4;
+
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				traceShapeIndex = 1;
+				traceEndShapeIndex = 2;
+				traceHullShapeIndex = 3;
+			}
+
+			_traceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, traceShapeIndex);
+			_traceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, traceEndShapeIndex);
+			_traceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, nint, bool>(g_pRayTraceHandle, traceHullShapeIndex);
 		}
 
 		public static unsafe bool TraceShape(Vector origin, QAngle angles, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
