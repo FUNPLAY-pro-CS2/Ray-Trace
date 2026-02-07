@@ -29,7 +29,7 @@
   },
   "CNavPhysicsInterface_TraceShape": {
     "offsets": {
-      "windows": 5,
+      "windows": 3,
       "linux": 5
     }
   },
