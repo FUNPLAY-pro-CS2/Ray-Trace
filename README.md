@@ -211,7 +211,7 @@ Due to C++ ABI differences:
 | Linux (Itanium ABI) | 2                | 3                   | 4                    |
 | Windows (MSVC ABI)  | 1                | 2                   | 3                    |
 
-`public/Example.cs` applies Itanium offsets by default.
+`public/Example.cs` applies correct offsets by default.
 
 ---
 
