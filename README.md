@@ -141,7 +141,7 @@ This file contains:
 Vector vecOrigin{};
 QAngle angView{};
 TraceOptions traceOpts{};
-traceOpts.InteractsWith = static_cast<uint64_t>(MASK_SHOT_FULL);
+traceOpts.InteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
 traceOpts.DrawBeam = 1;
 
 TraceResult traceResult{};
@@ -189,7 +189,7 @@ public void DoTrace(CCSPlayerController player)
     QAngle angles = player.PlayerPawn.Value!.EyeAngles;
 
     TraceOptions options = new(
-        InteractionLayers.MASK_SHOT_FULL
+        InteractionLayers.MASK_SHOT_PHYSICS
     );
 
     if (CRayTrace.TraceShape(origin, angles, null, options, out TraceResult result))
@@ -211,7 +211,7 @@ Due to C++ ABI differences:
 | Linux (Itanium ABI) | 2                | 3                   | 4                    |
 | Windows (MSVC ABI)  | 1                | 2                   | 3                    |
 
-`public/Example.cs` applies Itanium offsets by default.
+`public/Example.cs` applies correct offsets by default.
 
 ---
 
