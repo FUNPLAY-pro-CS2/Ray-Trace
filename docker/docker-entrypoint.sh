@@ -20,13 +20,13 @@ rm -rf "$SDK_DIR"
 mkdir -p "$SDK_DIR"
 
 echo "=== Downloading HL2SDK-CS2 ==="
-git clone --depth=1 -b cs2 https://github.com/alliedmodders/hl2sdk "$HL2SDK_DIR"
+git clone --recursive --branch SlynxCZ/cs2 --single-branch https://github.com/FUNPLAY-pro-CS2/hl2sdk.git "$HL2SDK_DIR"
 
 echo "=== Downloading Metamod-Source ==="
-git clone --depth=1 https://github.com/alliedmodders/metamod-source "$MMSOURCE_DIR"
+git clone --recursive --branch master --single-branch https://github.com/alliedmodders/metamod-source.git "$MMSOURCE_DIR"
 
 echo "=== Downloading Protobufs ==="
-git clone --depth=1 https://github.com/SteamDatabase/Protobufs "$CSGO_PROTO_DIR"
+git clone --recursive https://github.com/SteamDatabase/Protobufs "$CSGO_PROTO_DIR"
 
 ### --- Export env vars for CMake ------------------------------------------
 export HL2SDKCS2="$HL2SDK_DIR"
@@ -51,3 +51,21 @@ cmake .. \
 
 echo "=== Building with GCC | Release | All ==="
 cmake --build . --config Release -j"$(nproc)"
+cd ../
+
+mkdir -p build/addons/counterstrikesharp/plugins
+mkdir -p build/addons/counterstrikesharp/shared/RayTraceApi
+
+dotnet publish managed/RayTrace/RayTraceImpl/RayTraceImpl.csproj \
+  -c Release \
+  -o build/addons/counterstrikesharp/plugins/RayTraceImpl \
+  --no-self-contained \
+  /p:PublishSingleFile=false \
+  /p:CopyLocalLockFileAssemblies=false
+
+dotnet publish managed/RayTrace/RayTraceApi/RayTraceApi.csproj \
+  -c Release \
+  -o build/addons/counterstrikesharp/shared/RayTraceApi \
+  --no-self-contained \
+  /p:PublishSingleFile=false \
+  /p:CopyLocalLockFileAssemblies=false

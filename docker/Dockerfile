@@ -16,7 +16,11 @@ RUN apt update && apt install -y \
     pkg-config \
     libcurl4-openssl-dev \
     libmaxminddb-dev \
-    curl
+    curl \
+    && curl -sSL https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -o packages-microsoft-prod.deb \
+        && dpkg -i packages-microsoft-prod.deb \
+        && rm packages-microsoft-prod.deb \
+        && apt update && apt install -y dotnet-sdk-8.0
 
 RUN git config --system --add safe.directory '*'
 

@@ -100,34 +100,50 @@ jobs:
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-linux, build-windows]
+    needs: [ build-linux, build-windows ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-    - name: Download Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: RayTrace-linux
-        path: ./build/linux
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: RayTrace-linux
+          path: ./artifacts/linux
 
-    - name: Download Windows artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: RayTrace-windows
-        path: ./build/windows
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: RayTrace-windows
+          path: ./artifacts/windows
 
-    - name: Archive packages
-      run: |
-        version="${GITHUB_REF#refs/tags/}"
-        tar -czf RayTrace-${version}-linux.tar.gz -C build/linux .
-        tar -czf RayTrace-${version}-windows.tar.gz -C build/windows .
+      - name: Prepare release packages
+        run: |
+          version="${GITHUB_REF#refs/tags/}"
+          
+          mkdir release
+          
+          # Linux MM plugin
+          tar -czf release/RayTrace-MM-${version}-linux.tar.gz \
+            -C artifacts/linux .
+          
+          # Windows MM plugin
+          tar -czf release/RayTrace-MM-${version}-windows.tar.gz \
+            -C artifacts/windows .
+          
+          # CS# package (platform independent)
+          mkdir cs
+          cp -r artifacts/linux/addons/counterstrikesharp cs/
+          
+          tar -czf release/RayTrace-CSSharp-${version}.tar.gz \
+            -C cs .
 
-    - name: Upload release archive
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: RayTrace-*.tar.gz
-        tag: ${{ github.ref }}
-        file_glob: true
-        release_name: "${{ github.ref_name }} - Download"
+      - name: Upload release archives
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: release/*.tar.gz
+          tag: ${{ github.ref }}
+          file_glob: true
+          release_name: "${{ github.ref_name }}"

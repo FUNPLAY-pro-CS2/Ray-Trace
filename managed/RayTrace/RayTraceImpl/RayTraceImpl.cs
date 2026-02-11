@@ -18,7 +18,7 @@ using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using RayTraceAPI;
 
-namespace RayTrace;
+namespace RayTraceImpl;
 
 // ReSharper disable once InconsistentNaming
 // ReSharper disable once UnusedType.Global

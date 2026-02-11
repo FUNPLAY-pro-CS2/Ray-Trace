@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTraceImpl", "RayTraceImpl.csproj", "{0D0FD0C6-A1A6-47A7-8370-29CCE2CD4598}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTraceImpl", "RayTraceImpl/RayTraceImpl.csproj", "{0D0FD0C6-A1A6-47A7-8370-29CCE2CD4598}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTraceApi", "RayTraceApi.csproj", "{13E6E993-1E09-4B9A-9888-98481E1C3178}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTraceApi", "RayTraceApi/RayTraceApi.csproj", "{13E6E993-1E09-4B9A-9888-98481E1C3178}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
