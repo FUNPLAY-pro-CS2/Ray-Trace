@@ -134,17 +134,17 @@ jobs:
           tar -czf release/RayTrace-MM-${version}-windows.tar.gz \
             -C artifacts/windows .
 
-          mkdir -p RayTrace-CSSharp-${version}/counterstrikesharp/plugins
-          mkdir -p RayTrace-CSSharp-${version}/counterstrikesharp/shared
+          mkdir -p RayTrace-CSS-API-${version}/counterstrikesharp/plugins
+          mkdir -p RayTrace-CSS-API-${version}/counterstrikesharp/shared
 
           cp -r artifacts/linux/counterstrikesharp/plugins/RayTraceImpl \
-            RayTrace-CSSharp-${version}/counterstrikesharp/plugins/
+            RayTrace-CSS-API-${version}/counterstrikesharp/plugins/
 
           cp -r artifacts/linux/counterstrikesharp/shared/RayTraceApi \
-            RayTrace-CSSharp-${version}/counterstrikesharp/shared/
+            RayTrace-CSS-API-${version}/counterstrikesharp/shared/
 
-          tar -czf release/RayTrace-CSSharp-${version}.tar.gz \
-            RayTrace-CSSharp-${version}
+          tar -czf release/RayTrace-CSS-API-${version}.tar.gz \
+            RayTrace-CSS-API-${version}
 
       - name: Upload release archives
         uses: svenstaro/upload-release-action@v2
