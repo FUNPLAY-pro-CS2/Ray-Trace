@@ -144,15 +144,39 @@ struct TraceOptions
 
 struct TraceResult
 {
-    float EndPosX;
-    float EndPosY;
-    float EndPosZ;
-    CEntityInstance* HitEntity;
+    // Start & end positions
+    float StartPosX, StartPosY, StartPosZ;
+    float EndPosX, EndPosY, EndPosZ;
+    float HitPointX, HitPointY, HitPointZ;
+
+    // Hit normal
+    float NormalX, NormalY, NormalZ;
+
+    // Fraction & hit offset
     float Fraction;
-    int AllSolid;
-    float NormalX;
-    float NormalY;
-    float NormalZ;
+    float HitOffset;
+
+    // Hit triangle / hitbox / hitgroup
+    int TriangleIndex;       // index of triangle hit
+    int HitboxBoneIndex;     // bone index of hitbox
+
+    // Contents / surface flags
+    int Contents;            // contents of the hit
+
+    // Ray type
+    int RayType;
+
+    // Start in solid & exact hit
+    bool AllSolid;
+    bool ExactHitPoint;
+
+    uintptr_t HitEntity;     
+    uintptr_t Hitbox;        
+    uintptr_t SurfaceProps;  
+    uintptr_t BodyHandle;    
+    uintptr_t ShapeHandle;
+    CTransform BodyTransform;
+    RnCollisionAttr_t ShapeAttributes;
 };
 
 class CRayTraceInterface

@@ -26,7 +26,6 @@ include(makefiles/shared.cmake)
 include(makefiles/protobuf.cmake)
 
 add_subdirectory(vendor/spdlog)
-add_subdirectory(vendor/khook)
 
 file(GLOB_RECURSE SOURCE_FILES
     src/*.cpp

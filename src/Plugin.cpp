@@ -119,7 +119,7 @@ namespace RayTracePlugin
         return nullptr;
     }
 
-    const char* IPlugin::GetAuthor() { return "Slynx"; }
+    const char* IPlugin::GetAuthor() { return "Slynx, SLAYER (Updated TraceResult)"; }
     const char* IPlugin::GetName() { return "RayTrace"; }
     const char* IPlugin::GetDescription() { return "RayTrace Metamod plugin for CS2 servers."; }
     const char* IPlugin::GetURL() { return "https://slynxdev.cz"; }
