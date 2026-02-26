@@ -123,24 +123,28 @@ jobs:
           version="${GITHUB_REF#refs/tags/}"
           
           mkdir -p release
-          
-          # Linux MM plugin
+
+          mkdir -p mm-linux
+          cp -r artifacts/linux/RayTrace mm-linux/
+          cp -r artifacts/linux/metamod mm-linux/ || true
+
           tar -czf release/RayTrace-MM-${version}-linux.tar.gz \
-            -C artifacts/linux .
-          
-          # Windows MM plugin
+            -C mm-linux .
+
           tar -czf release/RayTrace-MM-${version}-windows.tar.gz \
             -C artifacts/windows .
-          
-          # CS# package
-          mkdir -p cs/counterstrikesharp/plugins
-          mkdir -p cs/counterstrikesharp/shared
-          
-          cp -r artifacts/linux/counterstrikesharp/plugins/RayTraceImpl cs/counterstrikesharp/plugins/
-          cp -r artifacts/linux/counterstrikesharp/shared/RayTraceApi cs/counterstrikesharp/shared/
-          
-          tar -czf release/RayTrace-CSSharp-${version}.tar.gz \
-            -C cs . 
+
+          mkdir -p RayTrace-CSS-API-${version}/counterstrikesharp/plugins
+          mkdir -p RayTrace-CSS-API-${version}/counterstrikesharp/shared
+
+          cp -r artifacts/linux/counterstrikesharp/plugins/RayTraceImpl \
+            RayTrace-CSS-API-${version}/counterstrikesharp/plugins/
+
+          cp -r artifacts/linux/counterstrikesharp/shared/RayTraceApi \
+            RayTrace-CSS-API-${version}/counterstrikesharp/shared/
+
+          tar -czf release/RayTrace-CSS-API-${version}.tar.gz \
+            RayTrace-CSS-API-${version}
 
       - name: Upload release archives
         uses: svenstaro/upload-release-action@v2
