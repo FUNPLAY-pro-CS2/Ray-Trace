@@ -119,12 +119,6 @@ bool LoadRayTrace()
 
 ### C# (CounterStrikeSharp plugin)
 
-There are **two ways** to use the managed side:
-
-1.  `public/Example.cs` (reference implementation, for learning / custom
-    binding)
-2.  **Official release packages (recommended)**
-
 The recommended way is to use the prebuilt release components:
 
 -   Install **RayTraceImpl** as a CS# plugin:
@@ -137,9 +131,6 @@ The recommended way is to use the prebuilt release components:
 
 Then reference `RayTraceApi.dll` in your own plugin project and call the
 API normally.
-
-`public/Example.cs` demonstrates manual binding and struct layout, but
-in production you should rely on the release bridge + shared API.
 
 ------------------------------------------------------------------------
 
@@ -242,7 +233,6 @@ Due to C++ ABI differences:
 | Linux (Itanium ABI) | 2                | 3                   | 4                    |
 | Windows (MSVC ABI)  | 1                | 2                   | 3                    |
 
-`public/Example.cs` shows how offsets are applied manually.\
 Release builds handle this automatically inside RayTraceImpl.
 
 ------------------------------------------------------------------------
