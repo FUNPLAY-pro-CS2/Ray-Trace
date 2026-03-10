@@ -1,4 +1,5 @@
 #pragma once
+#include "transform.h"
 #include "vector.h"
 #include "gametrace.h"
 #include "entityinstance.h"
