@@ -13,6 +13,7 @@ namespace RayTraceAPI
     [Flags]
     public enum InteractionLayers : ulong
     {
+        None = 0,
         Solid = 0x1,
         Hitboxes = 0x2,
         Trigger = 0x4,
