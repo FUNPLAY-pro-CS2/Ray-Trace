@@ -11,164 +11,199 @@ namespace RayTraceAPI
 {
 #region Native Structs (matching C++ layout exactly)
     [Flags]
-	public enum InteractionLayers: ulong
-	{
-		None = 0,
-		Solid = 0x1,
-		Hitboxes = 0x2,
-		Trigger = 0x4,
-		Sky = 0x8,
-		PlayerClip = 0x10,
-		NPCClip = 0x20,
-		BlockLOS = 0x40,
-		BlockLight = 0x80,
-		Ladder = 0x100,
-		Pickup = 0x200,
-		BlockSound = 0x400,
-		NoDraw = 0x800,
-		Window = 0x1000,
-		PassBullets = 0x2000,
-		WorldGeometry = 0x4000,
-		Water = 0x8000,
-		Slime = 0x10000,
-		TouchAll = 0x20000,
-		Player = 0x40000,
-		NPC = 0x80000,
-		Debris = 0x100000,
-		Physics_Prop = 0x200000,
-		NavIgnore = 0x400000,
-		NavLocalIgnore = 0x800000,
-		PostProcessingVolume = 0x1000000,
-		UnusedLayer3 = 0x2000000,
-		CarriedObject = 0x4000000,
-		PushAway = 0x8000000,
-		ServerEntityOnClient = 0x10000000,
-		CarriedWeapon = 0x20000000,
-		StaticLevel = 0x40000000,
-		csgo_team1 = 0x80000000,
-		csgo_team2 = 0x100000000,
-		csgo_grenadeclip = 0x200000000,
-		csgo_droneclip = 0x400000000,
-		csgo_moveable = 0x800000000,
-		csgo_opaque = 0x1000000000,
-		csgo_monster = 0x2000000000,
-		csgo_thrown_grenade = 0x8000000000,
+    public enum InteractionLayers : ulong
+    {
+        None = 0,
+        Solid = 0x1,
+        Hitboxes = 0x2,
+        Trigger = 0x4,
+        Sky = 0x8,
+        PlayerClip = 0x10,
+        NPCClip = 0x20,
+        BlockLOS = 0x40,
+        BlockLight = 0x80,
+        Ladder = 0x100,
+        Pickup = 0x200,
+        BlockSound = 0x400,
+        NoDraw = 0x800,
+        Window = 0x1000,
+        PassBullets = 0x2000,
+        WorldGeometry = 0x4000,
+        Water = 0x8000,
+        Slime = 0x10000,
+        TouchAll = 0x20000,
+        Player = 0x40000,
+        NPC = 0x80000,
+        Debris = 0x100000,
+        Physics_Prop = 0x200000,
+        NavIgnore = 0x400000,
+        NavLocalIgnore = 0x800000,
+        PostProcessingVolume = 0x1000000,
+        UnusedLayer3 = 0x2000000,
+        CarriedObject = 0x4000000,
+        PushAway = 0x8000000,
+        ServerEntityOnClient = 0x10000000,
+        CarriedWeapon = 0x20000000,
+        StaticLevel = 0x40000000,
+        csgo_team1 = 0x80000000,
+        csgo_team2 = 0x100000000,
+        csgo_grenadeclip = 0x200000000,
+        csgo_droneclip = 0x400000000,
+        csgo_moveable = 0x800000000,
+        csgo_opaque = 0x1000000000,
+        csgo_monster = 0x2000000000,
+        csgo_thrown_grenade = 0x8000000000,
 
-		MASK_SHOT_PHYSICS = Solid | PlayerClip | Window | PassBullets | Player | NPC | Physics_Prop,
-		MASK_SHOT_HITBOX = Hitboxes | Player | NPC,
-		MASK_SHOT_FULL = MASK_SHOT_PHYSICS | Hitboxes,
-		MASK_WORLD_ONLY = Solid | Window | PassBullets,
-		MASK_GRENADE = Solid | Window | Physics_Prop | PassBullets,
-		MASK_BRUSH_ONLY = Solid | Window,
-		MASK_PLAYER_MOVE = Solid | Window | PlayerClip | PassBullets,
-		MASK_NPC_MOVE = Solid | Window | NPCClip | PassBullets
-	}
+        MASK_SHOT_PHYSICS = Solid | PlayerClip | Window | PassBullets | Player | NPC | Physics_Prop,
+        MASK_SHOT_HITBOX = Hitboxes | Player | NPC,
+        MASK_SHOT_FULL = MASK_SHOT_PHYSICS | Hitboxes,
+        MASK_WORLD_ONLY = Solid | Window | PassBullets,
+        MASK_GRENADE = Solid | Window | Physics_Prop | PassBullets,
+        MASK_BRUSH_ONLY = Solid | Window,
+        MASK_PLAYER_MOVE = Solid | Window | PlayerClip | PassBullets,
+        MASK_NPC_MOVE = Solid | Window | NPCClip | PassBullets
+    }
 
-	[StructLayout(LayoutKind.Explicit, Size = 32)]
-	public unsafe struct TraceOptions
-	{
-		[FieldOffset(0)] public ulong InteractsAs;
-		[FieldOffset(8)] public ulong InteractsWith;
-		[FieldOffset(16)] public ulong InteractsExclude;
-		[FieldOffset(24)] public int DrawBeam;
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public struct TraceOptions
+    {
+        public ulong InteractsAs;
+        public ulong InteractsWith;
+        public ulong InteractsExclude;
+        public int DrawBeam;
 
-		public TraceOptions()
-		{
-		  InteractsAs = 0;
-			InteractsWith = (ulong)InteractionLayers.MASK_SHOT_PHYSICS;
-			InteractsExclude = 0;
-			DrawBeam = 0;
-		}
+        private int _pad;
 
-		public TraceOptions(InteractionLayers interactsAs, InteractionLayers interactsWith, InteractionLayers interactsExclude = 0, bool drawBeam = false)
-		{
-		  InteractsAs = (ulong)interactsAs;
-			InteractsWith = (ulong)interactsWith;
-			InteractsExclude = (ulong)interactsExclude;
-			DrawBeam = drawBeam ? 1 : 0;
-		}
-	}
+        public TraceOptions()
+        {
+            InteractsAs = 0;
+            InteractsWith = (ulong)InteractionLayers.MASK_SHOT_PHYSICS;
+            InteractsExclude = 0;
+            DrawBeam = 0;
+        }
 
-	[StructLayout(LayoutKind.Explicit, Size = 136)]
-	public unsafe struct TraceResult
-	{
-		[FieldOffset(0)] public float StartPosX;
-		[FieldOffset(4)] public float StartPosY;
-		[FieldOffset(8)] public float StartPosZ;
+        public TraceOptions(InteractionLayers interactsAs, InteractionLayers interactsWith,
+            InteractionLayers interactsExclude = 0, bool drawBeam = false)
+        {
+            InteractsAs = (ulong)interactsAs;
+            InteractsWith = (ulong)interactsWith;
+            InteractsExclude = (ulong)interactsExclude;
+            DrawBeam = drawBeam ? 1 : 0;
+        }
+    }
 
-		[FieldOffset(12)] public float EndPosX;
-		[FieldOffset(16)] public float EndPosY;
-		[FieldOffset(20)] public float EndPosZ;
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct TraceResult
+    {
+        public Vector3 StartPos;
+        public Vector3 EndPos;
+        public Vector3 HitPoint;
+        public Vector3 Normal;
 
-		[FieldOffset(24)] public float HitPointX;
-		[FieldOffset(28)] public float HitPointY;
-		[FieldOffset(32)] public float HitPointZ;
+        public float Fraction;
+        public float HitOffset;
 
-		[FieldOffset(36)] public float NormalX;
-		[FieldOffset(40)] public float NormalY;
-		[FieldOffset(44)] public float NormalZ;
+        public int TriangleIndex;
+        public short HitboxBoneIndex;
+        private short _pad;
 
-		[FieldOffset(48)] public float Fraction;
-		[FieldOffset(52)] public float HitOffset;
+        public int Contents;
+        public int RayType;
 
-		[FieldOffset(56)] public int TriangleIndex;
-		[FieldOffset(60)] public int HitboxBoneIndex;
+        public bool StartInSolid;
+        public bool ExactHitPoint;
 
-		[FieldOffset(64)] public int Contents;
-		[FieldOffset(68)] public int RayType;
+        public nint HitEntity;
+        public nint Hitbox;
+        public nint Surface;
+        public nint Body;
+        public nint Shape;
 
-		[FieldOffset(72)] public int AllSolid;
-		[FieldOffset(76)] public int ExactHitPoint;
+        public nint BodyTransform;
+        public nint ShapeAttributes;
 
-		// pointer section
-		[FieldOffset(80)] public nint HitEntityPtr;
-		[FieldOffset(88)] public nint HitboxPtr;
-		[FieldOffset(96)] public nint SurfacePropsPtr;
-		[FieldOffset(104)] public nint BodyHandle;
-		[FieldOffset(112)] public nint ShapeHandle;
+        public readonly bool DidHit() => Fraction < 1.0f;
+        public readonly bool IsAllSolid() => StartInSolid;
+        public readonly bool HasExactHit() => ExactHitPoint;
 
-		// thread safe heap pointer section
-		[FieldOffset(120)] public nint BodyTransformPtr;
-		[FieldOffset(128)] public nint ShapeAttributesPtr;
+        public readonly int GetTriangleIndex() => TriangleIndex;
+        public readonly int GetHitboxBoneIndex() => HitboxBoneIndex;
+        public readonly int GetContents() => Contents;
+        public readonly int GetRayType() => RayType;
 
-		public unsafe ref T GetRef<T>(nint ptr) where T : unmanaged
-		{
-			if (ptr == 0)
-				throw new NullReferenceException();
+        public readonly Vector3 GetStartPos() => StartPos;
+        public readonly Vector3 GetEndPos() => EndPos;
+        public readonly Vector3 GetHitPoint() => HitPoint;
+        public readonly Vector3 GetNormal() => Normal;
 
-			return ref *(T*)ptr;
-		}
+        public readonly float GetFraction() => Fraction;
+        public readonly float GetHitOffset() => HitOffset;
 
-		public T? GetObject<T>(nint ptr) where T : class
-		{
-			if (ptr == 0)
-				return null;
+        public readonly T* GetPtr<T>(nint ptr) where T : unmanaged
+        {
+            return (T*)ptr;
+        }
 
-			return (T)Activator.CreateInstance(typeof(T), ptr)!;
-		}
+        public readonly ref T GetRef<T>(nint ptr) where T : unmanaged
+        {
+            if (ptr == 0)
+                throw new NullReferenceException();
 
-	    public Vector3 StartPos => new(StartPosX, StartPosY, StartPosZ);
-        public Vector3 EndPos => new(EndPosX, EndPosY, EndPosZ);
-        public Vector3 HitPoint => new(HitPointX, HitPointY, HitPointZ);
-        public Vector3 Normal => new(NormalX, NormalY, NormalZ);
+            return ref *(T*)ptr;
+        }
 
-	    public bool DidHit => Fraction < 1.0f;
-	    public bool IsAllSolid => AllSolid != 0;
-	    public bool HasExactHit => ExactHitPoint != 0;
+        public readonly bool TryGetRef<T>(nint ptr, out T* value) where T : unmanaged
+        {
+            if (ptr == 0)
+            {
+                value = null;
+                return false;
+            }
 
-		public CEntityInstance? HitEntity => GetObject<CEntityInstance>(HitEntityPtr);
-	}
+            value = (T*)ptr;
+            return true;
+        }
+
+        public readonly CEntityInstance HitEntityPtr() => new(HitEntity);
+
+        public readonly CTransform BodyTransformPtr() => new(BodyTransform);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct QAngle
+    {
+        public float X;
+        public float Y;
+        public float Z;
+    }
 #endregion
 
     public interface CRayTraceInterface
     {
-        public unsafe bool TraceShape(Vector origin, QAngle angles, CBaseEntity? ignoreEntity, TraceOptions options,
-            out TraceResult result);
+        TraceResult TraceShape(
+            in Vector3 start,
+            in QAngle angles,
+            CEntityInstance ignoreEntity,
+            in TraceOptions options);
 
-        public unsafe bool TraceEndShape(Vector origin, Vector endOrigin, CBaseEntity? ignoreEntity,
-            TraceOptions options, out TraceResult result);
+        TraceResult TraceEndShape(
+            in Vector3 start,
+            in Vector3 end,
+            CEntityInstance ignoreEntity,
+            in TraceOptions options);
 
-        public unsafe bool TraceHullShape(Vector vecStart, Vector vecEnd, Vector hullMins, Vector hullMaxs,
-            CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result);
+        TraceResult TraceHullShape(
+            in Vector3 start,
+            in Vector3 end,
+            in Vector3 mins,
+            in Vector3 maxs,
+            CEntityInstance ignoreEntity,
+            in TraceOptions options);
+
+        TraceResult TraceShapeEx(
+            in Vector3 start,
+            in Vector3 end,
+            nint traceFilter,
+            nint ray);
     }
 }

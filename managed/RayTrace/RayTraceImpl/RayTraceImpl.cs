@@ -3,7 +3,9 @@
 // Copyright (c) 2025 slynxcz. All rights reserved.
 //
 using System.Buffers;
+using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
@@ -17,6 +19,8 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using RayTraceAPI;
+using QAngle = RayTraceAPI.QAngle;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace RayTraceImpl;
 
@@ -54,112 +58,122 @@ public class RayTraceImpl : BasePlugin
 
 public class CRayTrace : CRayTraceInterface
 {
-    public unsafe bool TraceShape(Vector origin, QAngle angles, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
+    public TraceResult TraceShape(in Vector3 start, in QAngle angles, CEntityInstance ignore, in TraceOptions options)
     {
-        result = default;
+        unsafe
+        {
+            if (!NativeBridge.Loaded)
+                return default;
 
-        if (!NativeBridge.m_bRayTraceLoaded || NativeBridge.m_pRayTraceHandle == nint.Zero)
-            return false;
-
-        TraceResult resultBuffer = default;
-        TraceOptions optionsBuffer = options;
-
-        bool success = NativeBridge._traceShape!(NativeBridge.m_pRayTraceHandle,
-            origin.Handle,
-            angles.Handle,
-            ignoreEntity?.Handle ?? nint.Zero,
-            (nint)(&optionsBuffer),
-            (nint)(&resultBuffer));
-
-        result = resultBuffer;
-        return success;
+            return NativeBridge.TraceShape!(
+                NativeBridge.Handle,
+                start,
+                angles,
+                ignore.Handle,
+                (nint)Unsafe.AsPointer(ref Unsafe.AsRef(in options))
+            );
+        }
     }
 
-    public unsafe bool TraceEndShape(Vector origin, Vector endOrigin, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
+    public TraceResult TraceEndShape(in Vector3 start, in Vector3 end, CEntityInstance ignore, in TraceOptions options)
     {
-        result = default;
+        unsafe
+        {
+            if (!NativeBridge.Loaded)
+                return default;
 
-        if (!NativeBridge.m_bRayTraceLoaded || NativeBridge.m_pRayTraceHandle == nint.Zero)
-            return false;
-
-        TraceResult resultBuffer = default;
-        TraceOptions optionsBuffer = options;
-
-        bool success = NativeBridge._traceEndShape!(NativeBridge.m_pRayTraceHandle,
-            origin.Handle,
-            endOrigin.Handle,
-            ignoreEntity?.Handle ?? nint.Zero,
-            (nint)(&optionsBuffer),
-            (nint)(&resultBuffer));
-
-        result = resultBuffer;
-        return success;
+            return NativeBridge.TraceEndShape!(
+                NativeBridge.Handle,
+                start,
+                end,
+                ignore.Handle,
+                (nint)Unsafe.AsPointer(ref Unsafe.AsRef(in options))
+            );
+        }
     }
 
-    public unsafe bool TraceHullShape(Vector vecStart, Vector vecEnd, Vector hullMins, Vector hullMaxs, CBaseEntity? ignoreEntity, TraceOptions options, out TraceResult result)
+    public TraceResult TraceHullShape(in Vector3 start, in Vector3 end, in Vector3 mins, in Vector3 maxs, CEntityInstance ignore, in TraceOptions options)
     {
-        result = default;
+        unsafe
+        {
+            if (!NativeBridge.Loaded)
+                return default;
 
-        if (!NativeBridge.m_bRayTraceLoaded || NativeBridge.m_pRayTraceHandle == nint.Zero)
-            return false;
+            return NativeBridge.TraceHullShape!(
+                NativeBridge.Handle,
+                start,
+                end,
+                mins,
+                maxs,
+                ignore.Handle,
+                (nint)Unsafe.AsPointer(ref Unsafe.AsRef(in options))
+            );
+        }
+    }
 
-        TraceResult resultBuffer = default;
-        TraceOptions optionsBuffer = options;
+    public TraceResult TraceShapeEx(in Vector3 start, in Vector3 end, nint filter, nint ray)
+    {
+        unsafe
+        {
+            if (!NativeBridge.Loaded)
+                return default;
 
-        bool success = NativeBridge._traceHullShape!(NativeBridge.m_pRayTraceHandle,
-            vecStart.Handle,
-            vecEnd.Handle,
-            hullMins.Handle,
-            hullMaxs.Handle,
-            ignoreEntity?.Handle ?? nint.Zero,
-            (nint)(&optionsBuffer),
-            (nint)(&resultBuffer));
-
-        result = resultBuffer;
-        return success;
+            return NativeBridge.TraceShapeEx!(
+                NativeBridge.Handle,
+                start,
+                end,
+                filter,
+                ray
+            );
+        }
     }
 }
 
 public static class NativeBridge
 {
-    public static nint m_pRayTraceHandle = nint.Zero;
-    public static bool m_bRayTraceLoaded = false;
+    public static nint Handle;
+    public static bool Loaded;
 
-    public static Func<nint, nint, nint, nint, nint, nint, bool>? _traceShape;
-    public static Func<nint, nint, nint, nint, nint, nint, bool>? _traceEndShape;
-    public static Func<nint, nint, nint, nint, nint, nint, nint, nint, bool>? _traceHullShape;
+    public static Func<nint, Vector3, QAngle, nint, nint, TraceResult>? TraceShape;
+    public static Func<nint, Vector3, Vector3, nint, nint, TraceResult>? TraceEndShape;
+    public static Func<nint, Vector3, Vector3, Vector3, Vector3, nint, nint, TraceResult>? TraceHullShape;
+    public static Func<nint, Vector3, Vector3, nint, nint, TraceResult>? TraceShapeEx;
 
     public static bool Initialize()
     {
-        m_pRayTraceHandle = (nint)Utilities.MetaFactory("CRayTraceInterface001")!;
+        Handle = (nint)Utilities.MetaFactory("CRayTraceInterface001")!;
 
-        if (m_pRayTraceHandle == nint.Zero)
-        {
-            Prints.ServerLog("[RayTraceImpl] Failed to get Ray-Trace interface handle. Is Ray-Trace MetaMod module loaded?", ConsoleColor.Red);
+        if (Handle == 0)
             return false;
-        }
 
         Bind();
-        m_bRayTraceLoaded = true;
+        Loaded = true;
         return true;
     }
 
     private static void Bind()
     {
-        int traceShapeIndex = 2;
-        int traceEndShapeIndex = 3;
-        int traceHullShapeIndex = 4;
+        int shape, end, hull, ex;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            traceShapeIndex = 1;
-            traceEndShapeIndex = 2;
-            traceHullShapeIndex = 3;
+            shape = 1;
+            end = 2;
+            hull = 3;
+            ex = 4;
+        }
+        else
+        {
+            shape = 2;
+            end = 3;
+            hull = 4;
+            ex = 5;
         }
 
-        _traceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(m_pRayTraceHandle, traceShapeIndex);
-        _traceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(m_pRayTraceHandle, traceEndShapeIndex);
-        _traceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, nint, bool>(m_pRayTraceHandle, traceHullShapeIndex);
+        TraceShape = VirtualFunction.Create<nint, Vector3, QAngle, nint, nint, TraceResult>(Handle, shape);
+        TraceEndShape = VirtualFunction.Create<nint, Vector3, Vector3, nint, nint, TraceResult>(Handle, end);
+        TraceHullShape = VirtualFunction.Create<nint, Vector3, Vector3, Vector3, Vector3, nint, nint, TraceResult>(Handle, hull);
+        TraceShapeEx = VirtualFunction.Create<nint, Vector3, Vector3, nint, nint, TraceResult>(Handle, ex);
     }
 }
 

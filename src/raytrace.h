@@ -27,98 +27,18 @@ namespace RayTracePlugin::RayTrace
         }
     };
 
-    bool Initialize();
-
-    std::optional<TraceResult> TraceShape(
-        const Vector& origin,
-        const QAngle& viewangles,
-        CEntityInstance* ignoreEntity = nullptr,
-        const TraceOptions* opts = nullptr);
-
-    std::optional<TraceResult> TraceEndShape(
-        const Vector& origin,
-        const Vector& endOrigin,
-        CEntityInstance* ignoreEntity = nullptr,
-        const TraceOptions* opts = nullptr);
-
-    std::optional<TraceResult> TraceHullShape(
-        const Vector& vecStart,
-        const Vector& vecEnd,
-        const Vector& hullMins,
-        const Vector& hullMaxs,
-        CEntityInstance* ignoreEntity = nullptr,
-        const TraceOptions* opts = nullptr);
-
-    std::optional<TraceResult> TraceShapeEx(
-        const Vector& vecStart,
-        const Vector& vecEnd,
-        CTraceFilter& filterInc,
-        Ray_t rayInc);
-
-    class CRayTrace : public CRayTraceInterface
-    {
+    class CRayTrace : public CRayTraceInterface {
     public:
-        bool TraceShape(
-            const Vector* origin,
-            const QAngle* viewangles,
-            CEntityInstance* ignoreEntity,
-            const TraceOptions* opts,
-            TraceResult* outResult) override
-        {
-            auto result = RayTrace::TraceShape(*origin, *viewangles, ignoreEntity, opts);
-            if (!result.has_value())
-                return false;
-
-            *outResult = result.value();
-            return true;
-        }
-
-        bool TraceEndShape(
-            const Vector* origin,
-            const Vector* endOrigin,
-            CEntityInstance* ignoreEntity,
-            const TraceOptions* opts,
-            TraceResult* outResult) override
-        {
-            auto result = RayTrace::TraceEndShape(*origin, *endOrigin, ignoreEntity, opts);
-            if (!result.has_value())
-                return false;
-
-            *outResult = result.value();
-            return true;
-        }
-
-        bool TraceHullShape(
-            const Vector* vecStart,
-            const Vector* vecEnd,
-            const Vector* hullMins,
-            const Vector* hullMaxs,
-            CEntityInstance* ignoreEntity,
-            const TraceOptions* opts,
-            TraceResult* outResult) override
-        {
-            auto result = RayTrace::TraceHullShape(*vecStart, *vecEnd, *hullMins, *hullMaxs, ignoreEntity, opts);
-            if (!result.has_value())
-                return false;
-
-            *outResult = result.value();
-            return true;
-        }
-
-        bool TraceShapeEx(
-            const Vector* vecStart,
-            const Vector* vecEnd,
-            CTraceFilter* filterInc,
-            Ray_t* rayInc,
-            TraceResult* outResult) override
-        {
-            auto result = RayTrace::TraceShapeEx(*vecStart, *vecEnd, *filterInc, *rayInc);
-            if (!result.has_value())
-                return false;
-
-            *outResult = result.value();
-            return true;
-        }
+        bool Initialize();
+    public:
+        TraceResult TraceShape(const Vector& vecStart, const QAngle& angAngles, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions) override;
+        TraceResult TraceEndShape(const Vector& vecStart, const Vector& vecEnd, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions) override;
+        TraceResult TraceHullShape(const Vector& vecStart, const Vector& vecEnd, const Vector& vecMins, const Vector& vecMaxs, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions) override;
+        TraceResult TraceShapeEx(const Vector& vecStart, const Vector& vecEnd, CTraceFilter* pTraceFilter, Ray_t* pRay) override;
+    protected:
+        DynLibUtils::CMemory m_pCNavPhysicsInterface_TraceShape;
+    protected:
+        void** m_pCNavPhysicsInterfaceVTable;
     };
 
     extern CRayTrace g_CRayTrace;
