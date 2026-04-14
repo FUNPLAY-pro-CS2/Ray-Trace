@@ -88,7 +88,7 @@ namespace RayTracePlugin
         if (late)
         {
             shared::g_pEntitySystem = GameEntitySystem();
-            RayTrace::Initialize();
+            RayTrace::g_CRayTrace.Initialize();
             shared::g_bDetoursLoaded = true;
         }
 
