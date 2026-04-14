@@ -52,7 +52,7 @@ namespace RayTracePlugin::Listeners {
         if (!shared::g_bDetoursLoaded)
         {
             shared::g_pEntitySystem = GameEntitySystem();
-            RayTrace::Initialize();
+            RayTrace::g_CRayTrace.Initialize();
             shared::g_bDetoursLoaded = true;
         }
     }
