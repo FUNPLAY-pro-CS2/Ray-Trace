@@ -43,7 +43,7 @@ namespace RayTracePlugin::RayTrace
         beam->DispatchSpawn();
     }
 
-    TraceResult CRayTrace::TraceShape(const Vector& vecStart, const QAngle& angAngles, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions)
+    bool CRayTrace::TraceShape(const Vector& vecStart, const QAngle& angAngles, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions, TraceResult* pTraceResult)
     {
         CTraceFilterEx filter = pIgnoreEntity ? CTraceFilterEx(static_cast<CBaseEntity*>(pIgnoreEntity)) : CTraceFilterEx();
 
@@ -53,9 +53,6 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
-            if (pTraceOptions->InteractsAs != 0)
-                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
-
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -72,18 +69,18 @@ namespace RayTracePlugin::RayTrace
         };
 
         Ray_t ray;
-        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray);
+        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray, pTraceResult);
 
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
-            Color col = res.DidHit() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res.DidHit() ? res.HitPoint() : vecEnd, col);
+            Color col = res ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
+            DrawBeam(vecStart, (res && pTraceResult) ? pTraceResult->EndPos : vecEnd, col);
         }
 
         return res;
     }
 
-    TraceResult CRayTrace::TraceEndShape(const Vector& vecStart, const Vector& vecEnd, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions)
+    bool CRayTrace::TraceEndShape(const Vector& vecStart, const Vector& vecEnd, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions, TraceResult* pTraceResult)
     {
         CTraceFilterEx filter = pIgnoreEntity ? CTraceFilterEx(static_cast<CBaseEntity*>(pIgnoreEntity)) : CTraceFilterEx();
 
@@ -93,9 +90,6 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
-            if (pTraceOptions->InteractsAs != 0)
-                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
-
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -104,19 +98,19 @@ namespace RayTracePlugin::RayTrace
         }
 
         Ray_t ray;
-        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray);
+        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray, pTraceResult);
 
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
-            Color col = res.DidHit() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res.DidHit() ? res.HitPoint() : vecEnd, col);
+            Color col = res ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
+            DrawBeam(vecStart, (res && pTraceResult) ? pTraceResult->EndPos : vecEnd, col);
         }
 
         return res;
     }
 
-    TraceResult CRayTrace::TraceHullShape(const Vector& vecStart, const Vector& vecEnd, const Vector& vecMins,
-                                          const Vector& vecMaxs, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions)
+    bool CRayTrace::TraceHullShape(const Vector& vecStart, const Vector& vecEnd, const Vector& vecMins,
+                                          const Vector& vecMaxs, CEntityInstance* pIgnoreEntity, TraceOptions* pTraceOptions, TraceResult* pTraceResult)
     {
         CTraceFilterEx filter = pIgnoreEntity ? CTraceFilterEx(static_cast<CBaseEntity*>(pIgnoreEntity)) : CTraceFilterEx();
 
@@ -126,9 +120,6 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
-            if (pTraceOptions->InteractsAs != 0)
-                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
-
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -139,23 +130,23 @@ namespace RayTracePlugin::RayTrace
         Ray_t ray;
         ray.Init(vecMins, vecMaxs);
 
-        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray);
+        auto res = TraceShapeEx(vecStart, vecEnd, &filter, &ray, pTraceResult);
 
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
-            Color col = res.DidHit() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res.DidHit() ? res.HitPoint() : vecEnd, col);
+            Color col = res ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
+            DrawBeam(vecStart, (res && pTraceResult) ? pTraceResult->EndPos : vecEnd, col);
         }
 
         return res;
     }
 
-    TraceResult CRayTrace::TraceShapeEx(const Vector& vecStart, const Vector& vecEnd, CTraceFilter* pTraceFilter, Ray_t* pRay)
+    bool CRayTrace::TraceShapeEx(const Vector& vecStart, const Vector& vecEnd, CTraceFilter* pTraceFilter, Ray_t* pRay, TraceResult* pTraceResult)
     {
         if (!m_pCNavPhysicsInterface_TraceShape)
         {
             FP_ERROR("CNavPhysicsInterface::TraceShape is not bound!");
-            return TraceResult();
+            return false;
         }
 
         Vector vecStartCopy = vecStart;
@@ -166,6 +157,8 @@ namespace RayTracePlugin::RayTrace
             bool (*)(void*, Ray_t&, Vector&, Vector&, CTraceFilter*, CGameTrace*)>()(
             nullptr, *pRay, vecStartCopy, vecEndCopy, pTraceFilter, &trace);
 
-        return TraceResult(&trace, bResult);
+        *pTraceResult = TraceResult(&trace);
+
+        return bResult;
     }
 }

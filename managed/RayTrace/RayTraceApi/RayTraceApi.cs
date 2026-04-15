@@ -64,133 +64,53 @@ namespace RayTraceAPI
         MASK_NPC_MOVE = Solid | Window | NPCClip | PassBullets
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    [StructLayout(LayoutKind.Explicit, Size = 24)]
     public struct TraceOptions
     {
-        public ulong InteractsAs;
-        public ulong InteractsWith;
-        public ulong InteractsExclude;
-        public int DrawBeam;
-
-        private int _pad;
+        [FieldOffset(0)] public ulong InteractsWith;
+        [FieldOffset(8)] public ulong InteractsExclude;
+        [FieldOffset(16)] public int DrawBeam;
 
         public TraceOptions()
         {
-            InteractsAs = 0;
             InteractsWith = (ulong)InteractionLayers.MASK_SHOT_PHYSICS;
             InteractsExclude = 0;
             DrawBeam = 0;
         }
 
-        public TraceOptions(InteractionLayers interactsAs, InteractionLayers interactsWith,
-            InteractionLayers interactsExclude = 0, bool drawBeam = false)
+        public TraceOptions(InteractionLayers interactsWith, InteractionLayers interactsExclude = 0, bool drawBeam = false)
         {
-            InteractsAs = (ulong)interactsAs;
             InteractsWith = (ulong)interactsWith;
             InteractsExclude = (ulong)interactsExclude;
             DrawBeam = drawBeam ? 1 : 0;
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct TraceResult
+    [StructLayout(LayoutKind.Explicit, Size = 44)]
+    public struct TraceResult
     {
-        public Vector3 StartPos;
-        public Vector3 EndPos;
-        public Vector3 HitPoint;
-        public Vector3 Normal;
+        [FieldOffset(0)] public float EndPosX;
+        [FieldOffset(4)] public float EndPosY;
+        [FieldOffset(8)] public float EndPosZ;
+        [FieldOffset(16)] public nint HitEntity;
+        [FieldOffset(24)] public float Fraction;
+        [FieldOffset(28)] public int AllSolid;
+        [FieldOffset(32)] public float NormalX;
+        [FieldOffset(36)] public float NormalY;
+        [FieldOffset(40)] public float NormalZ;
 
-        public float Fraction;
-        public float HitOffset;
-
-        public int TriangleIndex;
-        public short HitboxBoneIndex;
-        private short _pad;
-
-        public int Contents;
-        public int RayType;
-
-        public bool StartInSolid;
-        public bool ExactHitPoint;
-
-        public nint HitEntity;
-        public nint Hitbox;
-        public nint Surface;
-        public nint Body;
-        public nint Shape;
-
-        public nint BodyTransform;
-        public nint ShapeAttributes;
-
-        public readonly bool DidHit() => Fraction < 1.0f;
-        public readonly bool IsAllSolid() => StartInSolid;
-        public readonly bool HasExactHit() => ExactHitPoint;
-
-        public readonly int GetTriangleIndex() => TriangleIndex;
-        public readonly int GetHitboxBoneIndex() => HitboxBoneIndex;
-        public readonly int GetContents() => Contents;
-        public readonly int GetRayType() => RayType;
-
-        public readonly Vector3 GetStartPos() => StartPos;
-        public readonly Vector3 GetEndPos() => EndPos;
-        public readonly Vector3 GetHitPoint() => HitPoint;
-        public readonly Vector3 GetNormal() => Normal;
-
-        public readonly float GetFraction() => Fraction;
-        public readonly float GetHitOffset() => HitOffset;
-
-        public readonly T* GetPtr<T>(nint ptr) where T : unmanaged
-        {
-            return (T*)ptr;
-        }
-
-        public readonly ref T GetRef<T>(nint ptr) where T : unmanaged
-        {
-            if (ptr == 0)
-                throw new NullReferenceException();
-
-            return ref *(T*)ptr;
-        }
-
-        public readonly bool TryGetRef<T>(nint ptr, out T* value) where T : unmanaged
-        {
-            if (ptr == 0)
-            {
-                value = null;
-                return false;
-            }
-
-            value = (T*)ptr;
-            return true;
-        }
-
-        public readonly CEntityInstance HitEntityPtr() => new(HitEntity);
-
-        public readonly CTransform BodyTransformPtr() => new(BodyTransform);
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct VectorNative
-    {
-        public float X;
-        public float Y;
-        public float Z;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct QAngleNative
-    {
-        public float X;
-        public float Y;
-        public float Z;
+        public Vector3 EndPos => new(EndPosX, EndPosY, EndPosZ);
+        public Vector3 Normal => new(NormalX, NormalY, NormalZ);
+        public bool DidHit => Fraction < 1.0f;
+        public bool IsAllSolid => AllSolid != 0;
     }
 #endregion
 
     public interface CRayTraceInterface
     {
-        public TraceResult TraceShape(Vector start, QAngle angles, CEntityInstance ignore, TraceOptions options);
-        public TraceResult TraceEndShape(Vector start, Vector end, CEntityInstance ignore, TraceOptions options);
-        public TraceResult TraceHullShape(Vector start, Vector end, Vector mins, Vector maxs, CEntityInstance ignore, TraceOptions options);
-        public TraceResult TraceShapeEx(Vector start, Vector end, nint filter, nint ray);
+        public bool TraceShape(Vector start, QAngle angles, CEntityInstance? ignore, TraceOptions options, out TraceResult result);
+        public bool TraceEndShape(Vector start, Vector end, CEntityInstance? ignore, TraceOptions options, out TraceResult result);
+        public bool TraceHullShape(Vector start, Vector end, Vector mins, Vector maxs, CEntityInstance? ignore, TraceOptions options, out TraceResult result);
+        public bool TraceShapeEx(Vector start, Vector end, nint filter, nint ray, out TraceResult result);
     }
 }

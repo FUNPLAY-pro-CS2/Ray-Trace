@@ -60,90 +60,100 @@ public class RayTraceImpl : BasePlugin
 
 public class CRayTrace : CRayTraceInterface
 {
-    public TraceResult TraceShape(Vector start, QAngle angles, CEntityInstance ignore, TraceOptions options)
+    public bool TraceShape(Vector start, QAngle angles, CEntityInstance? ignore, TraceOptions options, out TraceResult result)
     {
         unsafe
         {
+            result = default;
+
             if (!NativeBridge.Loaded)
-                return default;
+                return false;
 
-            VectorNative startNative = new() { X = start.X, Y = start.Y, Z = start.Z };
-            QAngleNative angNative = new() { X = angles.X, Y = angles.Y, Z = angles.Z };
-            TraceOptions optCopy = options;
+            TraceResult resultBuffer = default;
+            TraceOptions optionsBuffer = options;
 
-            return NativeBridge.TraceShape!(
-                NativeBridge.Handle,
-                (nint)(&startNative),
-                (nint)(&angNative),
-                ignore.Handle,
-                (nint)(&optCopy)
-            );
+            bool success = NativeBridge.TraceShape!(NativeBridge.Handle,
+                start.Handle,
+                angles.Handle,
+                ignore?.Handle ?? nint.Zero,
+                (nint)(&optionsBuffer),
+                (nint)(&resultBuffer));
+
+            result = resultBuffer;
+            return success;
         }
     }
 
-    public TraceResult TraceEndShape(Vector start, Vector end, CEntityInstance ignore, TraceOptions options)
+    public bool TraceEndShape(Vector start, Vector end, CEntityInstance? ignore, TraceOptions options, out TraceResult result)
     {
         unsafe
         {
+            result = default;
+
             if (!NativeBridge.Loaded)
-                return default;
+                return false;
 
-            VectorNative s = new() { X = start.X, Y = start.Y, Z = start.Z };
-            VectorNative e = new() { X = end.X, Y = end.Y, Z = end.Z };
-            TraceOptions opt = options;
+            TraceResult resultBuffer = default;
+            TraceOptions optionsBuffer = options;
 
-            return NativeBridge.TraceEndShape!(
-                NativeBridge.Handle,
-                (nint)(&s),
-                (nint)(&e),
-                ignore.Handle,
-                (nint)(&opt)
-            );
+            bool success = NativeBridge.TraceEndShape!(NativeBridge.Handle,
+                start.Handle,
+                end.Handle,
+                ignore?.Handle ?? nint.Zero,
+                (nint)(&optionsBuffer),
+                (nint)(&resultBuffer));
+
+            result = resultBuffer;
+            return success;
         }
     }
 
-    public TraceResult TraceHullShape(Vector start, Vector end, Vector mins, Vector maxs, CEntityInstance ignore, TraceOptions options)
+    public bool TraceHullShape(Vector start, Vector end, Vector mins, Vector maxs, CEntityInstance? ignore, TraceOptions options, out TraceResult result)
     {
         unsafe
         {
+            result = default;
+
             if (!NativeBridge.Loaded)
-                return default;
+                return false;
 
-            VectorNative s = new() { X = start.X, Y = start.Y, Z = start.Z };
-            VectorNative e = new() { X = end.X, Y = end.Y, Z = end.Z };
-            VectorNative mi = new() { X = mins.X, Y = mins.Y, Z = mins.Z };
-            VectorNative ma = new() { X = maxs.X, Y = maxs.Y, Z = maxs.Z };
-            TraceOptions opt = options;
+            TraceResult resultBuffer = default;
+            TraceOptions optionsBuffer = options;
 
-            return NativeBridge.TraceHullShape!(
-                NativeBridge.Handle,
-                (nint)(&s),
-                (nint)(&e),
-                (nint)(&mi),
-                (nint)(&ma),
-                ignore.Handle,
-                (nint)(&opt)
-            );
+            bool success = NativeBridge.TraceHullShape!(NativeBridge.Handle,
+                start.Handle,
+                end.Handle,
+                mins.Handle,
+                maxs.Handle,
+                ignore?.Handle ?? nint.Zero,
+                (nint)(&optionsBuffer),
+                (nint)(&resultBuffer));
+
+            result = resultBuffer;
+            return success;
         }
     }
 
-    public TraceResult TraceShapeEx(Vector start, Vector end, nint filter, nint ray)
+    public bool TraceShapeEx(Vector start, Vector end, nint filter, nint ray, out TraceResult result)
     {
         unsafe
         {
+            result = default;
+
             if (!NativeBridge.Loaded)
-                return default;
+                return false;
 
-            VectorNative s = new() { X = start.X, Y = start.Y, Z = start.Z };
-            VectorNative e = new() { X = end.X, Y = end.Y, Z = end.Z };
+            TraceResult resultBuffer = default;
 
-            return NativeBridge.TraceShapeEx!(
-                NativeBridge.Handle,
-                (nint)(&s),
-                (nint)(&e),
+            bool success = NativeBridge.TraceShapeEx!(NativeBridge.Handle,
+                start.Handle,
+                end.Handle,
                 filter,
-                ray
-            );
+                ray,
+                (nint)(&resultBuffer));
+
+            result = resultBuffer;
+            return success;
         }
     }
 }
@@ -153,10 +163,10 @@ public static class NativeBridge
     public static nint Handle;
     public static bool Loaded;
 
-    public static unsafe Func<nint, nint, nint, nint, nint, TraceResult>? TraceShape;
-    public static unsafe Func<nint, nint, nint, nint, nint, TraceResult>? TraceEndShape;
-    public static unsafe Func<nint, nint, nint, nint, nint, nint, nint, TraceResult>? TraceHullShape;
-    public static unsafe Func<nint, nint, nint, nint, nint, TraceResult>? TraceShapeEx;
+    public static unsafe Func<nint, nint, nint, nint, nint, nint, bool>? TraceShape;
+    public static unsafe Func<nint, nint, nint, nint, nint, nint, bool>? TraceEndShape;
+    public static unsafe Func<nint, nint, nint, nint, nint, nint, nint, nint, bool>? TraceHullShape;
+    public static unsafe Func<nint, nint, nint, nint, nint, nint, bool>? TraceShapeEx;
 
     public static bool Initialize()
     {
@@ -189,10 +199,10 @@ public static class NativeBridge
             ex = 5;
         }
 
-        TraceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, TraceResult>(Handle, shape);
-        TraceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, TraceResult>(Handle, end);
-        TraceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, TraceResult>(Handle, hull);
-        TraceShapeEx = VirtualFunction.Create<nint, nint, nint, nint, nint, TraceResult>(Handle, ex);
+        TraceShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(Handle, shape);
+        TraceEndShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(Handle, end);
+        TraceHullShape = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, nint, nint, bool>(Handle, hull);
+        TraceShapeEx = VirtualFunction.Create<nint, nint, nint, nint, nint, nint, bool>(Handle, ex);
     }
 }
 
