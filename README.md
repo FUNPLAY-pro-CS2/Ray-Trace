@@ -10,7 +10,7 @@ plugins**
 `Ray-Trace` is a lightweight **Metamod interface module** for\
 **Counter-Strike 2** servers.
 
-It exposes a shared interface: `CRayTraceInterface001` which can be
+It exposes a shared interface: `CRayTraceInterface002` which can be
 consumed from:
 
 -   Native **Metamod C++ plugins**
@@ -27,7 +27,7 @@ worlds without duplicating engine detours.
 
 ## Features
 
--   Metamod meta interface (`CRayTraceInterface001`)
+-   Metamod meta interface (`CRayTraceInterface002`)
 -   Works in **C++ and C#**
 -   Physics / hitbox / world trace presets
 -   Custom collision masks
@@ -105,7 +105,7 @@ bool LoadRayTrace()
     int iRet = 0;
 
     g_pRayTrace = static_cast<CRayTraceInterface*>(
-        g_SMAPI->MetaFactory("CRayTraceInterface001", &iRet, nullptr)
+        g_SMAPI->MetaFactory("CRayTraceInterface002", &iRet, nullptr)
     );
 
     if (iRet == META_IFACE_FAILED || !g_pRayTrace)
@@ -121,18 +121,16 @@ bool LoadRayTrace()
 
 ### C# (CounterStrikeSharp plugin)
 
-The recommended way is to use the prebuilt release components:
+1. Add the `RayTrace.cs` source file from `public/RayTrace.cs` to your plugin project.
+2. You can change the namespace and class name of `RayTrace.cs` to your project namespace.
+3. Initialize the interface in your plugin load method:
 
--   Install **RayTraceImpl** as a CS# plugin:
-
-        addons/counterstrikesharp/plugins/RayTraceImpl/RayTraceImpl.dll
-
--   Install **RayTraceApi** as a shared assembly:
-
-        addons/counterstrikesharp/shared/RayTraceApi/RayTraceApi.dll
-
-Then reference `RayTraceApi.dll` in your own plugin project and call the
-API normally.
+``` csharp
+public override void Load(bool hotReload)
+{
+    AddTimer(1.0f, () => CRayTrace.Init());
+}
+```
 
 ------------------------------------------------------------------------
 
@@ -174,55 +172,28 @@ if (g_pRayTrace && g_bRayTraceLoaded)
 
 ## Calling methods from C# (CounterStrikeSharp plugin)
 
-After installing RayTraceImpl + RayTraceApi from releases:
-
-1.  Add reference in your plugin `.csproj`:
-
-``` xml
-<ItemGroup>
-  <Reference Include="RayTraceApi">
-    <HintPath>libs/RayTraceApi.dll</HintPath>
-  </Reference>
-</ItemGroup>
-```
-
-2.  Use the API:
-
 ``` csharp
-using RayTraceAPI;
-using CounterStrikeSharp.API.Modules.Utils;
-
-internal static PluginCapability<CRayTraceInterface> RayTraceInterface { get; } = new("raytrace:craytraceinterface");
+public override void Load(bool hotReload)
+{
+    AddTimer(1.0f, () => CRayTrace.Init());
+}
 
 public void DoTrace(CCSPlayerController player)
 {
-    var rayTrace = RayTraceInterface.Get();
-    if (rayTrace == null)
+    if (player == null || !player.IsValid)
         return;
 
     var playerPawn = player.PlayerPawn.Value;
     if (playerPawn == null)
         return;
 
-    Vector origin = playerPawn.AbsOrigin!;
-    QAngle angles = playerPawn.EyeAngles!;
-
-    TraceOptions options = new();
-
-    if (rayTrace.TraceShape(origin, angles, null, options, out TraceResult result))
+    TraceByEyePosition(player, new TraceOptions(InteractionLayers.MASK_SHOT, InteractionLayers.MASK_SHOT), out var trace);
+    if (trace.DidHit)
     {
-        Console.WriteLine($"Hit fraction: {result.Fraction}");
-        Console.WriteLine($"EndPos: {result.EndPos}");
+        player.PrintToChat($"[RayTrace] Hit at {trace.HitPoint} | {trace.SurfaceProps.Name.Value}");
     }
 }
 ```
-
-The bridge handles:
-
--   Interface lookup via MetaFactory
--   Correct vtable offsets (Linux / Windows)
--   Delegate binding
--   Native struct layout alignment
 
 ------------------------------------------------------------------------
 

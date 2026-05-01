@@ -4,6 +4,10 @@
 #include "gametrace.h"
 #include "entityinstance.h"
 
+#ifdef MASK_SHOT
+#undef MASK_SHOT
+#endif
+
 #define RAYTRACE_INTERFACE_VERSION "CRayTraceInterface002"
 
 enum class InteractionLayers : uint64_t
@@ -76,6 +80,14 @@ constexpr InteractionLayers& operator|=(InteractionLayers& a, InteractionLayers 
     return a;
 }
 
+constexpr InteractionLayers MASK_SHOT =
+    InteractionLayers::Solid |
+    InteractionLayers::Player |
+    InteractionLayers::NPC |
+    InteractionLayers::Window |
+    InteractionLayers::Debris |
+    InteractionLayers::Hitboxes;
+
 /// Custom base (0x2C3011, using this as default in my plugins)
 constexpr InteractionLayers MASK_SHOT_PHYSICS =
     InteractionLayers::Solid |
@@ -136,6 +148,7 @@ static_assert(
 
 struct TraceOptions
 {
+    uint64_t InteractsAs = 0;
     uint64_t InteractsWith = static_cast<uint64_t>(MASK_SHOT_PHYSICS);
     uint64_t InteractsExclude = 0;
     int DrawBeam = 0;
@@ -143,57 +156,79 @@ struct TraceOptions
 
 struct TraceResult
 {
-    TraceResult()
-    {
-        HitEntity = nullptr;
-        AllSolid = 0;
-        Fraction = 1.0F;
-    }
+    // Start & end positions
+    float StartPosX, StartPosY, StartPosZ;
+    float EndPosX, EndPosY, EndPosZ;
+    float HitPointX, HitPointY, HitPointZ;
 
-    explicit TraceResult(const CGameTrace* pTrace)
-    {
-        EndPos = pTrace->m_vEndPos;
-        HitEntity = pTrace->m_pEnt;
-        Fraction = pTrace->m_flFraction;
-        AllSolid = pTrace->m_bStartInSolid;
-        Normal = pTrace->m_vHitNormal;
-    }
+    // Hit normal
+    float NormalX, NormalY, NormalZ;
 
-    Vector EndPos;
-    CEntityInstance* HitEntity;
+    // Fraction & hit offset
     float Fraction;
-    int AllSolid;
-    Vector Normal;
+    float HitOffset;
+
+    // Hit triangle / hitbox / hitgroup
+    int TriangleIndex;       // index of triangle hit
+    int HitboxBoneIndex;     // bone index of hitbox
+
+    // Contents / surface flags
+    int Contents;            // contents of the hit
+
+    // Ray type
+    int RayType;
+
+    // Start in solid & exact hit
+    bool AllSolid;
+    bool ExactHitPoint;
+
+    uintptr_t HitEntity;     
+    uintptr_t Hitbox;        
+    uintptr_t SurfaceProps;  
+    uintptr_t BodyHandle;    
+    uintptr_t ShapeHandle;
+    CTransform BodyTransform;
+    RnCollisionAttr_t ShapeAttributes;
 };
+
+
 
 class CRayTraceInterface
 {
 public:
     virtual ~CRayTraceInterface() = default;
 
-    virtual bool TraceShape(const Vector* pVecStart,
-                            const QAngle* pAngAngles,
-                            CEntityInstance* pIgnoreEntity,
-                            TraceOptions* pTraceOptions,
-                            TraceResult* pTraceResult) = 0;
+    virtual bool TraceShape(
+        const Vector* pVecStart,
+        const QAngle* pAngAngles,
+        CEntityInstance* pIgnoreEntity,
+        TraceOptions* pTraceOptions,
+        TraceResult* pTraceResult
+    ) = 0;
 
-    virtual bool TraceEndShape(const Vector* pVecStart,
-                               const Vector* pVecEnd,
-                               CEntityInstance* pIgnoreEntity,
-                               TraceOptions* pTraceOptions,
-                               TraceResult* pTraceResult) = 0;
+    virtual bool TraceEndShape(
+        const Vector* pVecStart,
+        const Vector* pVecEnd,
+        CEntityInstance* pIgnoreEntity,
+        TraceOptions* pTraceOptions,
+        TraceResult* pTraceResult
+    ) = 0;
 
-    virtual bool TraceHullShape(const Vector* pVecStart,
-                                const Vector* pVecEnd,
-                                const Vector* pVecMins,
-                                const Vector* pVecMaxs,
-                                CEntityInstance* pIgnoreEntity,
-                                TraceOptions* pTraceOptions,
-                                TraceResult* pTraceResult) = 0;
+    virtual bool TraceHullShape(
+        const Vector* pVecStart,
+        const Vector* pVecEnd,
+        const Vector* pVecMins,
+        const Vector* pVecMaxs,
+        CEntityInstance* pIgnoreEntity,
+        TraceOptions* pTraceOptions,
+        TraceResult* pTraceResult
+    ) = 0;
 
-    virtual bool TraceShapeEx(const Vector* pVecStart,
-                              const Vector* pVecEnd,
-                              CTraceFilter* pTraceFilter,
-                              Ray_t* pRay,
-                              TraceResult* pTraceResult) = 0;
+    virtual bool TraceShapeEx(
+        const Vector* pVecStart,
+        const Vector* pVecEnd,
+        CTraceFilter* pTraceFilter,
+        Ray_t* pRay,
+        TraceResult* pTraceResult
+    ) = 0;
 };

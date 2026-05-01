@@ -15,5 +15,4 @@ set(LINK_LIBRARIES
     ${SOURCESDK_LIB}/public/win64/mathlib.lib
     spdlog
     Protobufs
-    khook_lib
 )

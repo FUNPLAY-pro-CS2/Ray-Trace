@@ -1,6 +1,3 @@
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "vendor/khook"]
-	path = vendor/khook
-	url = https://github.com/SlynxCZ/KHook.git

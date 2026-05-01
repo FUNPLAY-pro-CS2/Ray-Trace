@@ -94,6 +94,9 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
+            if (pTraceOptions->InteractsAs != 0)
+                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
+
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -115,7 +118,7 @@ namespace RayTracePlugin::RayTrace
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res ? res->EndPos : vecEnd, col);
+            DrawBeam(vecStart, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : vecEnd, col);
         }
 
         return res;
@@ -131,6 +134,9 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
+            if (pTraceOptions->InteractsAs != 0)
+                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
+
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -144,7 +150,7 @@ namespace RayTracePlugin::RayTrace
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res ? res->EndPos : vecEnd, col);
+            DrawBeam(vecStart, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : vecEnd, col);
         }
 
         return res;
@@ -160,6 +166,9 @@ namespace RayTracePlugin::RayTrace
 
         if (pTraceOptions)
         {
+            if (pTraceOptions->InteractsAs != 0)
+                filter.m_nInteractsAs = pTraceOptions->InteractsAs;
+                
             if (pTraceOptions->InteractsWith != static_cast<uint64_t>(MASK_SHOT_PHYSICS))
                 filter.m_nInteractsWith = pTraceOptions->InteractsWith;
 
@@ -174,7 +183,7 @@ namespace RayTracePlugin::RayTrace
         if (pTraceOptions && pTraceOptions->DrawBeam)
         {
             Color col = res.has_value() ? colors::Red().ToValveColor() : colors::Green().ToValveColor();
-            DrawBeam(vecStart, res ? res->EndPos : vecEnd, col);
+            DrawBeam(vecStart, res ? Vector(res->EndPosX, res->EndPosY, res->EndPosZ) : vecEnd, col);
         }
 
         return res;
@@ -190,10 +199,48 @@ namespace RayTracePlugin::RayTrace
 
         Vector vecStartCopy = vecStart;
         Vector vecEndCopy = vecEnd;
-        CGameTrace trace;
+        CGameTrace tr;
 
-        m_pCNavPhysicsInterface_TraceShape.RCast<bool (*)(void*, Ray_t&, Vector&, Vector&, CTraceFilter*, CGameTrace*)>()(nullptr, ray, vecStartCopy, vecEndCopy, &traceFilter, &trace);
+        m_pCNavPhysicsInterface_TraceShape.RCast<bool (*)(void*, Ray_t&, Vector&, Vector&, CTraceFilter*, CGameTrace*)>()(nullptr, ray, vecStartCopy, vecEndCopy, &traceFilter, &tr);
 
-        return TraceResult(&trace);
+        TraceResult r{};
+        r.StartPosX = tr.m_vStartPos.x;
+        r.StartPosY = tr.m_vStartPos.y;
+        r.StartPosZ = tr.m_vStartPos.z;
+
+        r.EndPosX = tr.m_vEndPos.x;
+        r.EndPosY = tr.m_vEndPos.y;
+        r.EndPosZ = tr.m_vEndPos.z;
+
+        r.HitPointX = tr.m_vHitPoint.x;
+        r.HitPointY = tr.m_vHitPoint.y;
+        r.HitPointZ = tr.m_vHitPoint.z;
+
+        r.NormalX = tr.m_vHitNormal.x;
+        r.NormalY = tr.m_vHitNormal.y;
+        r.NormalZ = tr.m_vHitNormal.z;
+
+        r.Fraction = tr.m_flFraction;
+        r.HitOffset = tr.m_flHitOffset;
+
+        r.TriangleIndex = tr.m_nTriangle;
+        r.HitboxBoneIndex = tr.m_nHitboxBoneIndex;
+
+        r.Contents = tr.m_nContents;
+
+        r.RayType = static_cast<int>(tr.m_eRayType);
+
+        r.AllSolid = tr.m_bStartInSolid;
+        r.ExactHitPoint = tr.m_bExactHitPoint;
+
+        r.HitEntity = reinterpret_cast<uintptr_t>(tr.m_pEnt);
+        r.Hitbox = reinterpret_cast<uintptr_t>(tr.m_pHitbox);
+        r.SurfaceProps = reinterpret_cast<uintptr_t>(tr.m_pSurfaceProperties);
+        r.BodyHandle = reinterpret_cast<uintptr_t>(tr.m_hBody);
+        r.ShapeHandle = reinterpret_cast<uintptr_t>(tr.m_hShape);
+        r.BodyTransform = tr.m_BodyTransform;
+        r.ShapeAttributes = tr.m_ShapeAttributes;
+
+        return r;
     }
 }

@@ -19,7 +19,7 @@
 #include "raytrace.h"
 #include "tasks.h"
 
-#define VERSION_STRING SEMVER " @ " GITHUB_SHA
+#define VERSION_STRING "v1.0.13"
 #define BUILD_TIMESTAMP __DATE__ " " __TIME__
 
 PLUGIN_EXPOSE(RayTrace, RayTracePlugin::g_iPlugin);
