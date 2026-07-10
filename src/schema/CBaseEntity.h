@@ -102,13 +102,13 @@ inline CEntityInstance* UTIL_FindEntityByEHandle(CEntityInstance* pFind)
 
 typedef void (*CEntityInstance_AcceptInput_t)(CEntityInstance* pThis, const char* pInputName,
                                               CEntityInstance* pActivator, CEntityInstance* pCaller,
-                                              const variant_t& pValue, int nOutputID, void* pUnk1);
+                                              const variant_t& pValue);
 inline CEntityInstance_AcceptInput_t g_CEntityInstance_AcceptInput = nullptr;
 
 typedef void (*CEntitySystem_AddEntityIOEvent_t)(CEntitySystem* pEntitySystem, CEntityInstance* pThis,
                                                  const char* pInputName, CEntityInstance* pActivator,
                                                  CEntityInstance* pCaller, const variant_t& pValue, float delay,
-                                                 int nOutputID, void* pUnk1, void* pUnk2);
+                                                 void* pUnk1, void* pUnk2);
 inline CEntitySystem_AddEntityIOEvent_t g_CEntitySystem_AddEntityIOEvent = nullptr;
 
 
@@ -429,7 +429,7 @@ public:
                 return;
         }
 
-        g_CEntityInstance_AcceptInput(this, pInputName, pActivator, pCaller, variant_t(value), 0, 0LL);
+        g_CEntityInstance_AcceptInput(this, pInputName, pActivator, pCaller, variant_t(value));
     }
 
     void AddEntityIOEvent(const char* pInputName, CEntityInstance* pActivator = nullptr,
@@ -447,8 +447,7 @@ public:
         }
 
         g_CEntitySystem_AddEntityIOEvent(shared::g_pEntitySystem, this, pInputName, pActivator, pCaller,
-                                         variant_t(value), flDelay, 0,
-                                         0LL, 0LL);
+                                         variant_t(value), flDelay, 0LL, 0LL);
     }
 };
 

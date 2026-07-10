@@ -290,10 +290,6 @@ namespace RayTracePlugin {
         [[nodiscard]] static gear_slot_t GetItemGearSlot(const char *item) noexcept;
 
         CBasePlayerWeapon *GiveNamedItemAws(const char *item) noexcept;
-
-        void RemoveWeapons() {
-            CALL_VIRTUAL(void, shared::g_pGameConfig->GetOffset("CCSPlayer_ItemServices_RemoveWeapons"), this);
-        }
     };
 
     // We need an exactly sized class to be able to iterate the vector, our schema system implementation can't do this
