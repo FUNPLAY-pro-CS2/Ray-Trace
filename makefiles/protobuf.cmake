@@ -21,6 +21,7 @@ set(PROTO_TARGETS
         ${CSGO_PROTO_DIR}/gameevents.proto
         ${CSGO_PROTO_DIR}/clientmessages.proto
         ${CSGO_PROTO_DIR}/te.proto
+        ${CSGO_PROTO_DIR}/valveextensions.proto
 )
 
 if(UNIX)
