@@ -6,6 +6,7 @@ add_definitions(
     -DCOMPILER_GCC
     -DPLATFORM_64BITS
     -D_FILE_OFFSET_BITS=64
+    -DX64BITS
     -D_GLIBCXX_USE_CXX11_ABI=0
 )
 
