@@ -8,6 +8,10 @@
 #include <string>
 #include "shared.h"
 
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
+
 namespace RayTracePlugin::Paths {
     static std::string gameDirectory;
 
@@ -16,6 +20,21 @@ namespace RayTracePlugin::Paths {
             CBufferStringGrowable<255> gamePath;
             shared::g_pEngine->GetGameDir(gamePath);
             gameDirectory = std::string(gamePath.Get());
+#ifndef _WIN32
+            if (gameDirectory.empty()) {
+                // GetGameDir() can return an empty string on Linux depending on how
+                // the server was launched (observed under a systemd service). Fall
+                // back to deriving the game dir from this module's own path:
+                //   <game>/csgo/addons/RayTrace/bin/linuxsteamrt64/RayTrace.so
+                Dl_info info;
+                if (dladdr((void*)&gameDirectory, &info) && info.dli_fname) {
+                    std::string modulePath(info.dli_fname);
+                    auto pos = modulePath.rfind("/addons/");
+                    if (pos != std::string::npos)
+                        gameDirectory = modulePath.substr(0, pos) + "/";
+                }
+            }
+#endif
         }
         return gameDirectory;
     }
